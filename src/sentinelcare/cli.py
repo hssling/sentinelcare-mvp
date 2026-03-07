@@ -8,17 +8,12 @@ from .pipeline import SentinelCarePipeline
 
 def main() -> None:
     pipeline = SentinelCarePipeline()
+    workflow = pipeline.run_full_workflow(demo_events())
+    print(json.dumps(workflow, indent=2))
+
     result = pipeline.process_events(demo_events())
-
-    output = {
-        "alerts_generated": len(result.alerts),
-        "task_count": len(result.tasks),
-        "domains": sorted({a.domain for a in result.alerts}),
-    }
-    print(json.dumps(output, indent=2))
-
     if result.alerts:
-        first_alert = result.alerts[0]
+        first_alert = result.alerts[-1]
         action = pipeline.record_review_action(
             alert_id=first_alert.alert_id,
             acted_by="nurse_001",

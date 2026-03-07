@@ -35,4 +35,16 @@ def test_summary_contains_counts() -> None:
     summary = pipeline.summary()
     assert summary["events_total"] == 3
     assert summary["alerts_total"] >= 3
+    assert summary["agent_catalog_size"] == 8
     assert "medication_safety" in summary["alerts_by_domain"]
+
+
+def test_agent_catalog_and_single_run() -> None:
+    pipeline = SentinelCarePipeline()
+    catalog = pipeline.get_agent_catalog()
+    assert len(catalog) == 8
+    assert catalog[0]["agent_id"] == "A"
+
+    outcome = pipeline.run_single_agent("D", demo_events()[0])
+    assert outcome["agent_id"] == "D"
+    assert len(outcome["tasks"]) == 2

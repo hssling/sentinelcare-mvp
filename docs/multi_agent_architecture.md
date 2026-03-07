@@ -4,14 +4,14 @@ This implementation follows the blueprint's Agent A-H model and maps each agent 
 
 ## Agent roles in code
 
-- Agent A (`FounderProductArchitectAgent`): scope check for each incoming event.
-- Agent B (`ClinicalKnowledgeEngineerAgent`): prepares rule context for encounter.
-- Agent C (`DataInteroperabilityEngineerAgent`): normalization/audit marker for inbound event.
-- Agent D (`DetectionMLEngineerAgent`): executes safety detections across three MVP engines.
-- Agent E (`SafetyRedTeamEngineerAgent`): post-detection safety sanity check.
-- Agent F (`ApplicationEngineerAgent`): routes alerts to role-specific recipients.
-- Agent G (`DevSecOpsMLOpsEngineerAgent`): writes audit task metadata.
-- Agent H (`ValidationDocumentationEngineerAgent`): records validation task metadata.
+- Agent A (`FounderProductArchitectAgent`): `scope-check`, `pilot-domain-priority`.
+- Agent B (`ClinicalKnowledgeEngineerAgent`): `rule-context-build`, `policy-version-selection`.
+- Agent C (`DataInteroperabilityEngineerAgent`): `event-normalization`, `terminology-mapping`.
+- Agent D (`DetectionMLEngineerAgent`): `detection-run`, `risk-score-aggregation`.
+- Agent E (`SafetyRedTeamEngineerAgent`): `adversarial-sanity-check`, `false-positive-risk-triage`.
+- Agent F (`ApplicationEngineerAgent`): `route-and-notify`, `escalation-path-evaluation`.
+- Agent G (`DevSecOpsMLOpsEngineerAgent`): `audit-log-write`, `release-gate-check`.
+- Agent H (`ValidationDocumentationEngineerAgent`): `validation-record`, `quality-report-update`.
 
 ## End-to-end lifecycle
 
@@ -33,4 +33,3 @@ The system is intentionally modular:
 - easy to split each agent into a microservice later
 - deterministic and testable baseline for governance
 - direct alignment with the founder blueprint's pilot domains
-

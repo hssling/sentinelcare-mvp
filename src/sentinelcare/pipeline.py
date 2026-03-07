@@ -1,17 +1,12 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from typing import Any
 from uuid import uuid4
 
 from .agents import (
-    ApplicationEngineerAgent,
-    ClinicalKnowledgeEngineerAgent,
-    DataInteroperabilityEngineerAgent,
-    DetectionMLEngineerAgent,
-    DevSecOpsMLOpsEngineerAgent,
-    FounderProductArchitectAgent,
-    SafetyRedTeamEngineerAgent,
-    ValidationDocumentationEngineerAgent,
+    agent_catalog,
+    build_agent_registry,
 )
 from .contracts import Alert, Event, ProcessingResult, ReviewAction, utcnow
 from .engines import (
@@ -30,38 +25,36 @@ class SentinelCarePipeline:
         self.det_engine = DeteriorationSurveillanceEngine()
         self.router = AlertRouter()
 
-        self.agent_a = FounderProductArchitectAgent()
-        self.agent_b = ClinicalKnowledgeEngineerAgent()
-        self.agent_c = DataInteroperabilityEngineerAgent()
-        self.agent_d = DetectionMLEngineerAgent()
-        self.agent_e = SafetyRedTeamEngineerAgent()
-        self.agent_f = ApplicationEngineerAgent()
-        self.agent_g = DevSecOpsMLOpsEngineerAgent()
-        self.agent_h = ValidationDocumentationEngineerAgent()
+        self.agents = build_agent_registry()
 
         self.event_store: list[Event] = []
         self.alert_store: dict[str, Alert] = {}
         self.review_actions: list[ReviewAction] = []
         self.alerts_by_encounter: dict[str, list[str]] = defaultdict(list)
         self.repository = SupabaseRepository.from_env()
+        self.execution_log: list[dict[str, Any]] = []
 
     def process_event(self, event: Event) -> ProcessingResult:
-        tasks = [
-            self.agent_a.scope_task(event),
-            self.agent_b.rule_context_task(event),
-            self.agent_c.normalization_task(event),
-        ]
+        tasks = []
+        context: dict[str, Any] = {}
 
         self.event_store.append(event)
         if self.repository:
             self.repository.save_event(event)
+
+        # Stage 1: Foundation agents (A-C)
+        for agent_id in ("A", "B", "C"):
+            tasks.extend(self.agents[agent_id].run(event, context))
+
+        # Stage 2: Detection engines + agent checks (D-E)
         raw_alerts = (
             self.med_engine.run(event)
             + self.crit_engine.run(event)
             + self.det_engine.run(event)
         )
-        tasks.append(self.agent_d.detection_task(len(raw_alerts)))
-        tasks.append(self.agent_e.challenge_task(raw_alerts))
+        context["raw_alerts"] = raw_alerts
+        for agent_id in ("D", "E"):
+            tasks.extend(self.agents[agent_id].run(event, context))
 
         routed_alerts: list[Alert] = []
         for alert in raw_alerts:
@@ -72,13 +65,23 @@ class SentinelCarePipeline:
             if self.repository:
                 self.repository.save_alert(routed)
 
-        tasks.append(self.agent_f.routing_task(len(routed_alerts)))
-        tasks.append(self.agent_g.audit_task(event, len(routed_alerts)))
-        tasks.append(self.agent_h.validation_task(event, len(routed_alerts)))
+        # Stage 3-4: Intervention and governance agents (F-H)
+        context["routed_alerts"] = routed_alerts
+        for agent_id in ("F", "G", "H"):
+            tasks.extend(self.agents[agent_id].run(event, context))
+
         if self.repository:
             for task in tasks:
                 self.repository.save_task(task)
 
+        self.execution_log.append(
+            {
+                "event_id": event.event_id,
+                "agent_sequence": ["A", "B", "C", "D", "E", "F", "G", "H"],
+                "task_count": len(tasks),
+                "alert_count": len(routed_alerts),
+            }
+        )
         return ProcessingResult(alerts=routed_alerts, tasks=tasks)
 
     def process_events(self, events: list[Event]) -> ProcessingResult:
@@ -116,6 +119,46 @@ class SentinelCarePipeline:
             self.repository.save_review_action(action)
         return action
 
+    def run_single_agent(self, agent_id: str, event: Event) -> dict:
+        if agent_id not in self.agents:
+            raise ValueError(f"Unknown agent id: {agent_id}")
+
+        context: dict[str, Any] = {}
+        raw_alerts = (
+            self.med_engine.run(event)
+            + self.crit_engine.run(event)
+            + self.det_engine.run(event)
+        )
+        context["raw_alerts"] = raw_alerts
+        context["routed_alerts"] = [self.router.route(alert) for alert in raw_alerts]
+
+        tasks = self.agents[agent_id].run(event, context)
+        if self.repository:
+            for task in tasks:
+                self.repository.save_task(task)
+        return {
+            "agent_id": agent_id,
+            "tasks": [t.model_dump(mode="json") for t in tasks],
+            "preview_alert_count": len(raw_alerts),
+        }
+
+    def run_full_workflow(self, events: list[Event]) -> dict:
+        result = self.process_events(events)
+        per_agent_task_count: dict[str, int] = defaultdict(int)
+        for task in result.tasks:
+            agent_code = task.owner_agent.split(" - ")[0]
+            per_agent_task_count[agent_code] += 1
+        return {
+            "events_processed": len(events),
+            "alerts_generated": len(result.alerts),
+            "tasks_generated": len(result.tasks),
+            "per_agent_task_count": dict(sorted(per_agent_task_count.items())),
+            "execution_log": self.execution_log[-len(events):],
+        }
+
+    def get_agent_catalog(self) -> list[dict[str, Any]]:
+        return agent_catalog(self.agents)
+
     def summary(self) -> dict:
         by_domain: dict[str, int] = defaultdict(int)
         by_status: dict[str, int] = defaultdict(int)
@@ -127,6 +170,7 @@ class SentinelCarePipeline:
             "events_total": len(self.event_store),
             "alerts_total": len(self.alert_store),
             "review_actions_total": len(self.review_actions),
+            "agent_catalog_size": len(self.agents),
             "alerts_by_domain": dict(by_domain),
             "alerts_by_status": dict(by_status),
         }

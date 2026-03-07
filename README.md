@@ -34,9 +34,12 @@ See:
 4. Alerts are routed to role-specific recipients.
 5. Human review action closes/overrides alerts.
 6. Events, alerts, tasks, and review actions persist to Supabase when credentials are configured.
+7. Agent execution traces are logged with per-agent task counts.
 
 Operational endpoint:
 - `GET /metrics/summary`
+- `GET /agents/catalog`
+- `POST /agents/run`
 
 ## Local development
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from .contracts import Event
@@ -17,6 +17,11 @@ class ReviewActionRequest(BaseModel):
     action_type: str
     override_reason: str | None = None
     comment: str | None = None
+
+
+class AgentRunRequest(BaseModel):
+    agent_id: str
+    event: Event
 
 
 @app.get("/health")
@@ -36,13 +41,20 @@ def process_event(event: Event) -> dict:
 
 @app.post("/demo/run")
 def run_demo() -> dict:
-    result = pipeline.process_events(demo_events())
-    return {
-        "alerts_generated": len(result.alerts),
-        "task_count": len(result.tasks),
-        "domains": sorted({a.domain for a in result.alerts}),
-        "alerts": [a.model_dump(mode="json") for a in result.alerts],
-    }
+    return pipeline.run_full_workflow(demo_events())
+
+
+@app.get("/agents/catalog")
+def agents_catalog() -> dict:
+    return {"agents": pipeline.get_agent_catalog()}
+
+
+@app.post("/agents/run")
+def run_single_agent(request: AgentRunRequest) -> dict:
+    try:
+        return pipeline.run_single_agent(request.agent_id, request.event)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.post("/alerts/review")
