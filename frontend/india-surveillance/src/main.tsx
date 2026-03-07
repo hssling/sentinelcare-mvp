@@ -20,6 +20,7 @@ type User = {
   username?: string | null;
   is_active?: boolean;
 };
+
 type Facility = { facility_id: string; name: string; state: string; district: string };
 
 type Overview = {
@@ -68,11 +69,37 @@ type DailySubmission = {
   reviewed_by?: string | null;
 };
 
-type Report = { report_id: string; domain: string; deviation_class: string; severity: string; summary: string; status: string; assigned_to?: string | null };
+type Report = {
+  report_id: string;
+  domain: string;
+  deviation_class: string;
+  severity: string;
+  summary: string;
+  status: string;
+  assigned_to?: string | null;
+};
+
+type TraceStep = { step: string; finding: string; output: string };
+type EventTrace = {
+  report_id: string;
+  facility: string;
+  state: string;
+  district: string;
+  domain: string;
+  deviation_class: string;
+  severity: string;
+  validation_phase: string;
+  active_policy_version: string;
+  trace_steps: TraceStep[];
+  routed_to: string;
+  closure_requirement: string;
+};
+
 type StateCell = { state_cell_id: string; state: string; nodal_unit: string; lead_name: string; status: string; facilities_mapped: number };
 type Policy = { policy_id: string; title: string; state: string; validation_phase: string; activation_scope: string };
 type Notification = { notification_id: string; title: string; message: string; severity: string; status: string; created_at: string };
 type AuditLog = { audit_id: string; created_at: string; action: string; entity_type: string; entity_id: string; detail: string; actor_user_id?: string | null };
+type IntegrationProfile = { target_systems: string[]; input_modes: string[]; standards: string[]; privacy_controls: string[]; deployment_model: string };
 
 const configuredApiBase = (import.meta as ImportMeta & { env: { VITE_INDIA_SURVEILLANCE_API_BASE?: string } }).env.VITE_INDIA_SURVEILLANCE_API_BASE;
 const apiBase = window.location.protocol === 'https:' ? '/api' : (configuredApiBase || 'http://127.0.0.1:8010');
@@ -86,6 +113,18 @@ async function api<T>(path: string, token?: string, options?: RequestInit): Prom
     throw new Error(await response.text());
   }
   return response.json();
+}
+
+function parseError(error: unknown): string {
+  if (!(error instanceof Error)) return 'Request failed';
+  if (error.message.includes('Failed to fetch')) return 'Unable to reach the surveillance API';
+  try {
+    const parsed = JSON.parse(error.message);
+    if (parsed.detail) return String(parsed.detail);
+  } catch {
+    return error.message;
+  }
+  return error.message;
 }
 
 function App() {
@@ -107,13 +146,47 @@ function App() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [integrationProfile, setIntegrationProfile] = useState<IntegrationProfile | null>(null);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [selectedTrace, setSelectedTrace] = useState<EventTrace | null>(null);
+  const [traceError, setTraceError] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
-  const [form, setForm] = useState({ department_id: '', patient_days: 100, near_misses: 0, no_harm_events: 0, harm_events: 0, severe_events: 0, medication_events: 0, procedure_events: 0, infection_events: 0, diagnostic_events: 0, escalation_required: false, notes: '' });
-  const [userForm, setUserForm] = useState({ name: '', username: '', password: 'pass123', role: 'facility_reporter', facility_id: '', department_id: '', state: '', district: '' });
+  const [lastSync, setLastSync] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    department_id: '',
+    patient_days: 100,
+    near_misses: 0,
+    no_harm_events: 0,
+    harm_events: 0,
+    severe_events: 0,
+    medication_events: 0,
+    procedure_events: 0,
+    infection_events: 0,
+    diagnostic_events: 0,
+    escalation_required: false,
+    notes: '',
+  });
+  const [userForm, setUserForm] = useState({
+    name: '',
+    username: '',
+    password: 'pass123',
+    role: 'facility_reporter',
+    facility_id: '',
+    department_id: '',
+    state: '',
+    district: '',
+  });
+  const [triageForm, setTriageForm] = useState({ status: 'triaged', assigned_to: '', state_cell: '' });
+
+  const canCreateUsers = session?.user.role === 'facility_safety_officer' || session?.user.role === 'state_cell_analyst' || session?.user.role === 'national_analyst' || session?.user.role === 'governance_admin';
+  const canManageReports = session?.user.role === 'facility_safety_officer' || session?.user.role === 'state_cell_analyst' || session?.user.role === 'national_analyst';
+  const openReports = reports.filter((report) => report.status !== 'closed');
+  const pendingSubmissions = submissions.filter((submission) => submission.review_status === 'submitted');
+  const facilitySummary = useMemo(() => submissions.reduce((acc, item) => acc + item.near_misses + item.harm_events + item.severe_events, 0), [submissions]);
 
   const loadData = async (token: string) => {
     try {
-      const [overviewData, facilitiesData, dashboardData, departmentsData, submissionsData, reportsData, stateCellsData, policiesData, notificationsData, usersData, auditData] = await Promise.all([
+      const [overviewData, facilitiesData, dashboardData, departmentsData, submissionsData, reportsData, stateCellsData, policiesData, notificationsData, usersData, auditData, integrationData] = await Promise.all([
         api<Overview>('/overview', token),
         api<Facility[]>('/facilities', token),
         api<Dashboard>('/dashboard', token),
@@ -125,6 +198,7 @@ function App() {
         api<Notification[]>('/notifications', token),
         api<User[]>('/users', token),
         api<AuditLog[]>('/audit-logs?limit=20', token).catch(() => []),
+        api<IntegrationProfile>('/integration-profile', token),
       ]);
       setOverview(overviewData);
       setFacilities(facilitiesData);
@@ -137,11 +211,36 @@ function App() {
       setNotifications(notificationsData);
       setUsers(usersData);
       setAuditLogs(auditData);
+      setIntegrationProfile(integrationData);
       setForm((current) => ({ ...current, department_id: departmentsData[0]?.department_id || current.department_id }));
-      setUserForm((current) => ({ ...current, facility_id: session?.user.facility_id || current.facility_id, state: session?.user.state || current.state }));
+      setUserForm((current) => ({
+        ...current,
+        facility_id: session?.user.facility_id || current.facility_id,
+        state: session?.user.state || current.state,
+      }));
+      setTriageForm((current) => ({
+        ...current,
+        assigned_to: current.assigned_to || session?.user.name || '',
+        state_cell: current.state_cell || stateCellsData[0]?.nodal_unit || '',
+      }));
+      if (!selectedReportId && reportsData[0]) {
+        setSelectedReportId(reportsData[0].report_id);
+      }
       setErrorBanner(null);
+      setLastSync(new Date().toLocaleString());
     } catch (error) {
-      setErrorBanner(error instanceof Error ? error.message : 'Failed to load surveillance data');
+      setErrorBanner(parseError(error));
+    }
+  };
+
+  const loadTrace = async (token: string, reportId: string) => {
+    try {
+      const trace = await api<EventTrace>(`/trace/${reportId}`, token);
+      setSelectedTrace(trace);
+      setTraceError(null);
+    } catch (error) {
+      setSelectedTrace(null);
+      setTraceError(parseError(error));
     }
   };
 
@@ -154,14 +253,20 @@ function App() {
     }
   }, [session]);
 
+  useEffect(() => {
+    if (session && selectedReportId) {
+      void loadTrace(session.access_token, selectedReportId);
+    }
+  }, [session, selectedReportId]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const nextSession = await api<Session>('/auth/login', undefined, { method: 'POST', body: JSON.stringify({ username, password }) });
       setSession(nextSession);
       setLoginError(null);
-    } catch {
-      setLoginError('Invalid credentials');
+    } catch (error) {
+      setLoginError(parseError(error));
     }
   };
 
@@ -204,8 +309,25 @@ function App() {
     await loadData(session.access_token);
   };
 
-  const facilitySummary = useMemo(() => submissions.reduce((acc, item) => acc + item.near_misses + item.harm_events + item.severe_events, 0), [submissions]);
-  const canCreateUsers = session?.user.role === 'facility_safety_officer' || session?.user.role === 'state_cell_analyst' || session?.user.role === 'national_analyst' || session?.user.role === 'governance_admin';
+  const triageReport = async (reportId: string) => {
+    if (!session) return;
+    await api(`/reports/${reportId}/triage`, session.access_token, {
+      method: 'POST',
+      body: JSON.stringify(triageForm),
+    });
+    await loadData(session.access_token);
+    await loadTrace(session.access_token, reportId);
+  };
+
+  const closeReport = async (reportId: string) => {
+    if (!session) return;
+    await api(`/reports/${reportId}/close`, session.access_token, {
+      method: 'POST',
+      body: JSON.stringify({ closure_note: `Closed by ${session.user.name} after review.` }),
+    });
+    await loadData(session.access_token);
+    await loadTrace(session.access_token, reportId);
+  };
 
   if (!session) {
     return (
@@ -221,8 +343,8 @@ function App() {
           </form>
           <div className="demo-credentials">
             <strong>Seed accounts</strong>
-            <small>`tmk-ed`, `tmk-icu`, `ka-fso`, `state-ka`, `national`, `admin`</small>
-            <small>Password: `pass123`</small>
+            <small><code>tmk-ed</code>, <code>tmk-icu</code>, <code>ka-fso</code>, <code>state-ka</code>, <code>national</code>, <code>admin</code></small>
+            <small>Password: <code>pass123</code></small>
           </div>
           {loginError && <p className="error-text">{loginError}</p>}
         </div>
@@ -235,13 +357,16 @@ function App() {
       <header className="hero compact-hero">
         <div>
           <p className="eyebrow">Logged in as {session.user.role}</p>
-          <h1>Surveillance operations dashboard</h1>
+          <h1>Safety surveillance command center</h1>
           <p className="lede">{session.user.name}</p>
         </div>
         <div className="hero-card">
           <strong>{session.user.facility_id || session.user.state || 'National scope'}</strong>
-          <p>{apiBase}</p>
-          <button onClick={() => setSession(null)}>Logout</button>
+          <p>{lastSync ? `Last sync ${lastSync}` : apiBase}</p>
+          <div className="action-row">
+            <button onClick={() => void loadData(session.access_token)}>Refresh</button>
+            <button onClick={() => setSession(null)}>Logout</button>
+          </div>
         </div>
       </header>
 
@@ -252,11 +377,81 @@ function App() {
           <Metric label="Reports received" value={overview.reports_received} />
           <Metric label="Open reports" value={dashboard.reports_open} />
           <Metric label="Pending reviews" value={dashboard.submissions_pending_review} />
-          <Metric label="Facility signal load" value={facilitySummary} />
+          <Metric label="Department signal load" value={facilitySummary} />
           <Metric label="Escalated signals" value={overview.escalated_signals} />
           <Metric label="Sentinel events" value={overview.sentinel_events} />
         </section>
       )}
+
+      <section className="panel-grid panel-grid-wide">
+        <Panel title="Operations queue" subtitle="Review pressure, open cases, and manager actions">
+          <div className="chips">
+            <span className="chip">Pending submissions: {pendingSubmissions.length}</span>
+            <span className="chip">Open reports: {openReports.length}</span>
+            <span className="chip">Notifications: {notifications.filter((item) => item.status !== 'closed').length}</span>
+          </div>
+          <div className="report-list">
+            {reports.map((report) => (
+              <button key={report.report_id} className={`report-card selectable ${selectedReportId === report.report_id ? 'selected' : ''}`} onClick={() => setSelectedReportId(report.report_id)}>
+                <div className="report-header">
+                  <span>{report.report_id}</span>
+                  <span className={`pill severity-${report.severity}`}>{report.severity}</span>
+                </div>
+                <strong>{humanize(report.domain)} / {humanize(report.deviation_class)}</strong>
+                <p>{report.summary}</p>
+                <small>{report.status} | {report.assigned_to || 'unassigned'}</small>
+              </button>
+            ))}
+          </div>
+          {canManageReports && selectedReportId && (
+            <div className="subsection action-block">
+              <h3>Report action</h3>
+              <div className="daily-form">
+                <label>Status<select value={triageForm.status} onChange={(e) => setTriageForm({ ...triageForm, status: e.target.value })}><option value="triaged">Triaged</option><option value="investigating">Investigating</option></select></label>
+                <label>Assigned to<input value={triageForm.assigned_to} onChange={(e) => setTriageForm({ ...triageForm, assigned_to: e.target.value })} /></label>
+                <label>State cell<input value={triageForm.state_cell} onChange={(e) => setTriageForm({ ...triageForm, state_cell: e.target.value })} /></label>
+              </div>
+              <div className="action-row">
+                <button onClick={() => void triageReport(selectedReportId)}>Save triage</button>
+                <button onClick={() => void closeReport(selectedReportId)}>Close report</button>
+              </div>
+            </div>
+          )}
+        </Panel>
+
+        <Panel title="Case trace" subtitle="Explainable path from intake to governance">
+          {selectedTrace ? (
+            <>
+              <div className="trace-meta">
+                <h3>{selectedTrace.report_id}</h3>
+                <p>{selectedTrace.facility}, {selectedTrace.district}, {selectedTrace.state}</p>
+                <div className="chips">
+                  <span className="chip">{humanize(selectedTrace.domain)}</span>
+                  <span className="chip">{humanize(selectedTrace.deviation_class)}</span>
+                  <span className={`chip severity-${selectedTrace.severity}`}>{selectedTrace.severity}</span>
+                </div>
+              </div>
+              <div className="trace-steps">
+                {selectedTrace.trace_steps.map((step) => (
+                  <div key={step.step} className="trace-step">
+                    <strong>{humanize(step.step)}</strong>
+                    <p>{step.finding}</p>
+                    <small>{step.output}</small>
+                  </div>
+                ))}
+              </div>
+              <div className="trace-footer">
+                <strong>Route</strong>
+                <p>{selectedTrace.routed_to}</p>
+                <strong>Closure requirement</strong>
+                <p>{selectedTrace.closure_requirement}</p>
+              </div>
+            </>
+          ) : (
+            <p>{traceError || 'Select a report to inspect its explainable trace.'}</p>
+          )}
+        </Panel>
+      </section>
 
       <section className="panel-grid">
         <Panel title="Daily surveillance feed" subtitle="Department-level reporting and review">
@@ -277,20 +472,7 @@ function App() {
           ) : <p>This role reviews submissions rather than creating them.</p>}
         </Panel>
 
-        <Panel title="Trend analytics" subtitle="Longitudinal activity and burden indicators">
-          {dashboard?.trend?.points?.length ? (
-            <>
-              <TrendChart points={dashboard.trend.points} />
-              <div className="chips">
-                {dashboard?.indicators.map((indicator) => <span key={indicator.label} className="chip">{indicator.label}: {indicator.value}</span>)}
-              </div>
-            </>
-          ) : <p>No trend data recorded yet.</p>}
-        </Panel>
-      </section>
-
-      <section className="panel-grid">
-        <Panel title="Submission worklist" subtitle="Department submissions and manager action states">
+        <Panel title="Review worklist" subtitle="Submissions requiring action and manager closure">
           {submissions.map((submission) => (
             <div key={submission.submission_id} className="report-card">
               <div className="report-header">
@@ -299,34 +481,47 @@ function App() {
               </div>
               <strong>{departments.find((d) => d.department_id === submission.department_id)?.name || submission.department_id}</strong>
               <p>{submission.notes || 'No notes recorded.'}</p>
-              <small>Near misses {submission.near_misses} • Harm {submission.harm_events} • Severe {submission.severe_events}</small>
+              <small>Near misses {submission.near_misses} | Harm {submission.harm_events} | Severe {submission.severe_events}</small>
               {(session.user.role === 'facility_safety_officer' || session.user.role === 'state_cell_analyst' || session.user.role === 'national_analyst') && (
                 <div className="action-row">
-                  <button onClick={() => reviewSubmission(submission.submission_id, 'reviewed')}>Mark reviewed</button>
-                  <button onClick={() => reviewSubmission(submission.submission_id, 'actioned')}>Mark actioned</button>
+                  <button onClick={() => void reviewSubmission(submission.submission_id, 'reviewed')}>Mark reviewed</button>
+                  <button onClick={() => void reviewSubmission(submission.submission_id, 'actioned')}>Mark actioned</button>
                 </div>
               )}
             </div>
           ))}
         </Panel>
+      </section>
 
-        <Panel title="Notifications and alerts" subtitle="Escalation messaging and operational signal handling">
+      <section className="panel-grid">
+        <Panel title="Trend analytics" subtitle="Longitudinal burden, alerts, and signal velocity">
+          {dashboard?.trend?.points?.length ? (
+            <>
+              <TrendChart points={dashboard.trend.points} />
+              <div className="chips">
+                {dashboard.indicators.map((indicator) => <span key={indicator.label} className="chip">{indicator.label}: {indicator.value}</span>)}
+              </div>
+            </>
+          ) : <p>No trend data recorded yet.</p>}
+        </Panel>
+
+        <Panel title="Notifications and alerts" subtitle="Escalation messaging and signal attention">
           <div className="alert-stack">
             {dashboard?.alerts.map((alert) => (
               <div key={alert.alert_id} className="trace-step">
                 <strong>{alert.title}</strong>
                 <p>{alert.detail}</p>
-                <small>{alert.owner_role} • {alert.severity}</small>
+                <small>{alert.owner_role} | {alert.severity}</small>
               </div>
             ))}
             {notifications.map((notification) => (
               <div key={notification.notification_id} className="trace-step">
                 <strong>{notification.title}</strong>
                 <p>{notification.message}</p>
-                <small>{notification.status} • {new Date(notification.created_at).toLocaleString()}</small>
+                <small>{notification.status} | {new Date(notification.created_at).toLocaleString()}</small>
                 <div className="action-row">
-                  <button onClick={() => acknowledgeNotification(notification.notification_id, 'acknowledged')}>Acknowledge</button>
-                  <button onClick={() => acknowledgeNotification(notification.notification_id, 'closed')}>Close</button>
+                  <button onClick={() => void acknowledgeNotification(notification.notification_id, 'acknowledged')}>Acknowledge</button>
+                  <button onClick={() => void acknowledgeNotification(notification.notification_id, 'closed')}>Close</button>
                 </div>
               </div>
             ))}
@@ -335,30 +530,34 @@ function App() {
       </section>
 
       <section className="panel-grid">
-        <Panel title="Governance and audit" subtitle="Reports, policy context, and durable audit trail">
-          <div className="subsection">
-            <h3>Open reports</h3>
-            {reports.filter((r) => r.status !== 'closed').map((report) => (
-              <div key={report.report_id} className="policy-row">
-                <strong>{report.report_id}</strong>
-                <small>{report.domain.replace(/_/g, ' ')} • {report.status} • {report.assigned_to || 'unassigned'}</small>
-              </div>
-            ))}
-          </div>
+        <Panel title="Governance and audit" subtitle="Policy state, audit trail, and operating context">
           <div className="subsection">
             <h3>Policies</h3>
-            {policies.map((policy) => <div key={policy.policy_id} className="policy-row"><strong>{policy.title}</strong><small>{policy.state} • {policy.validation_phase}</small></div>)}
+            {policies.map((policy) => <div key={policy.policy_id} className="policy-row"><strong>{policy.title}</strong><small>{policy.state} | {policy.validation_phase}</small></div>)}
           </div>
           <div className="subsection">
             <h3>Audit trail</h3>
-            {auditLogs.map((log) => <div key={log.audit_id} className="policy-row"><strong>{log.action}</strong><small>{log.entity_type}:{log.entity_id} • {log.detail}</small></div>)}
+            {auditLogs.map((log) => <div key={log.audit_id} className="policy-row"><strong>{log.action}</strong><small>{log.entity_type}:{log.entity_id} | {log.detail}</small></div>)}
+          </div>
+          <div className="subsection">
+            <h3>Integration profile</h3>
+            {integrationProfile && (
+              <div className="chips">
+                <span className="chip">{integrationProfile.deployment_model}</span>
+                {integrationProfile.standards.map((item) => <span key={item} className="chip">{item}</span>)}
+              </div>
+            )}
           </div>
         </Panel>
 
-        <Panel title="Network and administration" subtitle="State cells and account management">
+        <Panel title="Network and administration" subtitle="State cells, facility map, and account control">
           <div className="subsection">
             <h3>State cells</h3>
-            {stateCells.map((cell) => <div key={cell.state_cell_id} className="policy-row"><strong>{cell.state}</strong><small>{cell.status} • {cell.facilities_mapped} facilities</small></div>)}
+            {stateCells.map((cell) => <div key={cell.state_cell_id} className="policy-row"><strong>{cell.state}</strong><small>{cell.status} | {cell.facilities_mapped} facilities</small></div>)}
+          </div>
+          <div className="subsection">
+            <h3>Facilities</h3>
+            {facilities.map((facility) => <div key={facility.facility_id} className="policy-row"><strong>{facility.name}</strong><small>{facility.district}, {facility.state}</small></div>)}
           </div>
           {canCreateUsers && (
             <div className="subsection">
@@ -382,7 +581,7 @@ function App() {
                 <button type="submit">Create account</button>
               </form>
               <div className="user-list">
-                {users.map((item) => <div key={item.user_id} className="policy-row"><strong>{item.username || item.name}</strong><small>{item.role} • {item.facility_id || item.state || 'national'}</small></div>)}
+                {users.map((item) => <div key={item.user_id} className="policy-row"><strong>{item.username || item.name}</strong><small>{item.role} | {item.facility_id || item.state || 'national'}</small></div>)}
               </div>
             </div>
           )}
@@ -390,6 +589,10 @@ function App() {
       </section>
     </div>
   );
+}
+
+function humanize(value: string) {
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function Panel(props: { title: string; subtitle: string; children: React.ReactNode }) {
