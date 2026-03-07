@@ -268,6 +268,7 @@ Related workflows:
 - [Review Article](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/review_article_india_patient_safety_landscape.md)
 - [Systematic Review / Meta-Analysis Protocol](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/systematic_review_meta_analysis_protocol.md)
 - [Target Journal Packages](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages)
+- [IJMR Special Article Package](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/README.md)
 
 ## Current Maturity
 
@@ -298,4 +299,3 @@ If you are new to the project:
 3. read [National Minimum Dataset](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/architecture/national_minimum_dataset.md)
 4. read [AI-Assisted Workflow Architecture](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/architecture/ai_assisted_workflow_architecture.md)
 5. then inspect the live app and code
-
