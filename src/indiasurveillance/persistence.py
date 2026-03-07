@@ -338,33 +338,59 @@ class SupabaseStorage(StorageBackend):
 
     def bootstrap_if_empty(self) -> None:
         memory = InMemoryStorage()
-        if self._table_empty("facilities", "facility_id"):
-            for facility in memory.list_facilities():
-                self.import_facility(facility)
-        if self._table_empty("departments", "department_id"):
-            for department in memory.list_departments():
-                self.client.table("departments").upsert(_serialize(department)).execute()
-        if self._table_empty("state_cells", "state_cell_id"):
-            for state_cell in memory.list_state_cells():
-                self.client.table("state_cells").upsert(_serialize(state_cell)).execute()
-        if self._table_empty("policies", "policy_id"):
-            for policy in memory.list_policies():
-                self.client.table("policies").upsert(_serialize(policy)).execute()
-        if self._table_empty("event_reports", "report_id"):
-            for report in memory.list_reports():
-                self.client.table("event_reports").upsert(_serialize(report)).execute()
-        if self._table_empty("event_cases", "case_id"):
-            for event_case in memory.list_event_cases():
-                self.client.table("event_cases").upsert(_serialize(event_case)).execute()
-        if self._table_empty("safety_signals", "signal_id"):
-            for signal in memory.list_signals():
-                self.client.table("safety_signals").upsert(_serialize(signal)).execute()
-        if self._table_empty("daily_submissions", "submission_id"):
-            for submission in memory.list_daily_submissions():
-                self.client.table("daily_submissions").upsert(_serialize(submission)).execute()
-        if self._table_empty("surveillance_users", "user_id"):
-            for user in memory.list_users():
-                self.create_user(user)
+        self._seed_table_if_empty("facilities", "facility_id", memory.list_facilities(), self.import_facility)
+        self._seed_table_if_empty(
+            "departments",
+            "department_id",
+            memory.list_departments(),
+            lambda department: self.client.table("departments").upsert(_serialize(department)).execute(),
+        )
+        self._seed_table_if_empty(
+            "state_cells",
+            "state_cell_id",
+            memory.list_state_cells(),
+            lambda state_cell: self.client.table("state_cells").upsert(_serialize(state_cell)).execute(),
+        )
+        self._seed_table_if_empty(
+            "policies",
+            "policy_id",
+            memory.list_policies(),
+            lambda policy: self.client.table("policies").upsert(_serialize(policy)).execute(),
+        )
+        self._seed_table_if_empty(
+            "event_reports",
+            "report_id",
+            memory.list_reports(),
+            lambda report: self.client.table("event_reports").upsert(_serialize(report)).execute(),
+        )
+        self._seed_table_if_empty(
+            "event_cases",
+            "case_id",
+            memory.list_event_cases(),
+            lambda event_case: self.client.table("event_cases").upsert(_serialize(event_case)).execute(),
+        )
+        self._seed_table_if_empty(
+            "safety_signals",
+            "signal_id",
+            memory.list_signals(),
+            lambda signal: self.client.table("safety_signals").upsert(_serialize(signal)).execute(),
+        )
+        self._seed_table_if_empty(
+            "daily_submissions",
+            "submission_id",
+            memory.list_daily_submissions(),
+            lambda submission: self.client.table("daily_submissions").upsert(_serialize(submission)).execute(),
+        )
+        self._seed_table_if_empty("surveillance_users", "user_id", memory.list_users(), self.create_user)
+
+    def _seed_table_if_empty(self, table: str, key: str, items: list[Any], writer) -> None:
+        if not self._table_empty(table, key):
+            return
+        try:
+            for item in items:
+                writer(item)
+        except Exception:
+            return
 
     def _table_empty(self, table: str, key: str) -> bool:
         try:
