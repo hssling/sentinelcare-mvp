@@ -14,6 +14,12 @@ See:
 - [Netlify + Supabase Deployment](/d:/Medical%20Error%20U-HEDPPLS/docs/deployment_netlify_supabase.md)
 - [Roadmap](/d:/Medical%20Error%20U-HEDPPLS/docs/roadmap.md)
 - [IDE to Production Automation](/d:/Medical%20Error%20U-HEDPPLS/docs/ide_to_prod_automation.md)
+- [Literature Landscape](/d:/Medical%20Error%20U-HEDPPLS/docs/research/literature_landscape.md)
+- [Guideline Alignment Matrix](/d:/Medical%20Error%20U-HEDPPLS/docs/research/guideline_alignment_matrix.md)
+- [Theoretical Framework](/d:/Medical%20Error%20U-HEDPPLS/docs/research/theoretical_framework.md)
+- [Stepwise Build Plan](/d:/Medical%20Error%20U-HEDPPLS/docs/research/stepwise_build_plan.md)
+- [Manuscript 01](/d:/Medical%20Error%20U-HEDPPLS/docs/manuscripts/manuscript_01_concept_and_protocol.md)
+- [Manuscript 02](/d:/Medical%20Error%20U-HEDPPLS/docs/manuscripts/manuscript_02_architecture_and_implementation.md)
 
 ## Stack
 
