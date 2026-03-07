@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta
 
 from .contracts import (
+    DailySurveillanceSubmission,
+    Department,
     EventReport,
     Facility,
     PilotStateCell,
@@ -172,28 +174,53 @@ def build_demo_users() -> list[UserIdentity]:
             state="Karnataka",
             district="Tumkur",
             facility_id="FAC-TMK-001",
+            username="ka-fso",
+        ),
+        UserIdentity(
+            user_id="demo-ed-ka",
+            name="Tumkur Emergency Department Reporter",
+            role="facility_reporter",
+            state="Karnataka",
+            district="Tumkur",
+            facility_id="FAC-TMK-001",
+            department_id="DEPT-TMK-ED",
+            username="tmk-ed",
+        ),
+        UserIdentity(
+            user_id="demo-icu-ka",
+            name="Tumkur ICU Reporter",
+            role="facility_reporter",
+            state="Karnataka",
+            district="Tumkur",
+            facility_id="FAC-TMK-001",
+            department_id="DEPT-TMK-ICU",
+            username="tmk-icu",
         ),
         UserIdentity(
             user_id="demo-state-ka",
             name="Karnataka State Cell Analyst",
             role="state_cell_analyst",
             state="Karnataka",
+            username="state-ka",
         ),
         UserIdentity(
             user_id="demo-state-rj",
             name="Rajasthan State Cell Analyst",
             role="state_cell_analyst",
             state="Rajasthan",
+            username="state-rj",
         ),
         UserIdentity(
             user_id="demo-national",
             name="National Surveillance Analyst",
             role="national_analyst",
+            username="national",
         ),
         UserIdentity(
             user_id="demo-admin",
             name="Governance Administrator",
             role="governance_admin",
+            username="admin",
         ),
     ]
 
@@ -215,5 +242,58 @@ def build_demo_state_cells() -> list[PilotStateCell]:
             lead_name="State Epidemiology and Quality Lead",
             status="pilot",
             facilities_mapped=9,
+        ),
+    ]
+
+
+def build_demo_departments() -> list[Department]:
+    return [
+        Department(department_id="DEPT-TMK-ED", facility_id="FAC-TMK-001", name="Emergency Department", category="clinical"),
+        Department(department_id="DEPT-TMK-ICU", facility_id="FAC-TMK-001", name="ICU", category="clinical"),
+        Department(department_id="DEPT-TMK-OT", facility_id="FAC-TMK-001", name="Operation Theatre", category="clinical"),
+        Department(department_id="DEPT-TMK-QA", facility_id="FAC-TMK-001", name="Quality Cell", category="quality"),
+        Department(department_id="DEPT-JPR-ED", facility_id="FAC-DLH-014", name="Emergency Department", category="clinical"),
+        Department(department_id="DEPT-KOL-RAD", facility_id="FAC-KOL-022", name="Radiology", category="support"),
+    ]
+
+
+def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
+    today = date(2026, 3, 8)
+    return [
+        DailySurveillanceSubmission(
+            submission_id="SUB-TMK-001",
+            submission_date=today,
+            facility_id="FAC-TMK-001",
+            department_id="DEPT-TMK-ED",
+            submitted_by="demo-ed-ka",
+            patient_days=118,
+            near_misses=4,
+            no_harm_events=2,
+            harm_events=1,
+            severe_events=0,
+            medication_events=2,
+            procedure_events=0,
+            infection_events=0,
+            diagnostic_events=1,
+            escalation_required=False,
+            notes="High near-miss load during evening shift handover.",
+        ),
+        DailySurveillanceSubmission(
+            submission_id="SUB-TMK-002",
+            submission_date=today,
+            facility_id="FAC-TMK-001",
+            department_id="DEPT-TMK-ICU",
+            submitted_by="demo-icu-ka",
+            patient_days=36,
+            near_misses=2,
+            no_harm_events=1,
+            harm_events=1,
+            severe_events=1,
+            medication_events=1,
+            procedure_events=0,
+            infection_events=1,
+            diagnostic_events=0,
+            escalation_required=True,
+            notes="One deterioration escalation breach triggered review.",
         ),
     ]

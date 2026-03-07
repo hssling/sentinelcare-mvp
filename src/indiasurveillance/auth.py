@@ -16,3 +16,11 @@ def resolve_user(service: IndiaSurveillanceService, x_demo_user: str | None) -> 
 
 def demo_user_header(x_demo_user: str | None = Header(default=None)) -> str | None:
     return x_demo_user
+
+
+def session_header(authorization: str | None = Header(default=None)) -> str | None:
+    if not authorization:
+        return None
+    if authorization.lower().startswith("bearer "):
+        return authorization[7:]
+    return authorization

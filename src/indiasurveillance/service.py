@@ -1,29 +1,74 @@
 from __future__ import annotations
 
 from datetime import date
+from uuid import uuid4
 
 from .contracts import (
     ClosureRequest,
+    DailySubmissionCreate,
+    DailySurveillanceSubmission,
+    DashboardAlert,
+    DashboardIndicator,
+    DashboardSnapshot,
+    Department,
     EventReport,
     EventTrace,
     Facility,
     FacilityImportRecord,
     IntegrationProfile,
+    LoginRequest,
     PilotStateCell,
     RegistryImportRequest,
+    SessionToken,
+    SubmissionReviewRequest,
     SurveillanceSnapshot,
     TraceStep,
     TriageRequest,
     UserIdentity,
 )
-from .demo_data import build_demo_snapshot, build_demo_state_cells, build_demo_users
+from .demo_data import (
+    build_demo_daily_submissions,
+    build_demo_departments,
+    build_demo_snapshot,
+    build_demo_state_cells,
+    build_demo_users,
+)
 
 
 class IndiaSurveillanceService:
     def __init__(self) -> None:
         self.snapshot = build_demo_snapshot()
         self.users = {user.user_id: user for user in build_demo_users()}
+        self.users_by_username = {user.username: user for user in self.users.values() if user.username}
         self.state_cells = {cell.state_cell_id: cell for cell in build_demo_state_cells()}
+        self.departments = {item.department_id: item for item in build_demo_departments()}
+        self.daily_submissions = {item.submission_id: item for item in build_demo_daily_submissions()}
+        self.passwords = {
+            "ka-fso": "pass123",
+            "tmk-ed": "pass123",
+            "tmk-icu": "pass123",
+            "state-ka": "pass123",
+            "state-rj": "pass123",
+            "national": "pass123",
+            "admin": "pass123",
+        }
+        self.sessions: dict[str, str] = {}
+
+    def login(self, request: LoginRequest) -> SessionToken:
+        user = self.users_by_username.get(request.username)
+        if user is None or self.passwords.get(request.username) != request.password:
+            raise PermissionError("Invalid username or password")
+        token = f"session-{uuid4()}"
+        self.sessions[token] = user.user_id
+        return SessionToken(access_token=token, user=user)
+
+    def resolve_session(self, token: str | None) -> UserIdentity:
+        if not token:
+            raise PermissionError("Missing session token")
+        user_id = self.sessions.get(token)
+        if user_id is None:
+            raise PermissionError("Invalid session token")
+        return self.get_user(user_id)
 
     def get_snapshot(self) -> SurveillanceSnapshot:
         return self.snapshot
@@ -39,6 +84,52 @@ class IndiaSurveillanceService:
 
     def list_state_cells(self) -> list[PilotStateCell]:
         return list(self.state_cells.values())
+
+    def list_departments(self, facility_id: str | None = None) -> list[Department]:
+        items = list(self.departments.values())
+        if facility_id:
+            items = [item for item in items if item.facility_id == facility_id]
+        return items
+
+    def list_daily_submissions(self, user: UserIdentity) -> list[DailySurveillanceSubmission]:
+        submissions = list(self.daily_submissions.values())
+        if user.role == "facility_reporter":
+            return [item for item in submissions if item.department_id == user.department_id]
+        if user.role == "facility_safety_officer":
+            return [item for item in submissions if item.facility_id == user.facility_id]
+        if user.role == "state_cell_analyst":
+            facility_ids = {item.facility_id for item in self.snapshot.facilities if item.state == user.state}
+            return [item for item in submissions if item.facility_id in facility_ids]
+        return submissions
+
+    def create_daily_submission(self, request: DailySubmissionCreate, user: UserIdentity) -> DailySurveillanceSubmission:
+        if user.role not in {"facility_reporter", "facility_safety_officer"}:
+            raise PermissionError("User is not allowed to submit daily surveillance data")
+        department = self.departments.get(request.department_id)
+        if department is None:
+            raise KeyError(request.department_id)
+        if user.facility_id and department.facility_id != user.facility_id:
+            raise PermissionError("Department does not belong to the user's facility")
+        submission = DailySurveillanceSubmission(
+            submission_id=f"SUB-{uuid4().hex[:8].upper()}",
+            facility_id=department.facility_id,
+            submitted_by=user.user_id,
+            **request.model_dump(),
+        )
+        self.daily_submissions[submission.submission_id] = submission
+        return submission
+
+    def review_submission(self, submission_id: str, request: SubmissionReviewRequest, user: UserIdentity) -> DailySurveillanceSubmission:
+        if user.role not in {"facility_safety_officer", "state_cell_analyst", "national_analyst"}:
+            raise PermissionError("User is not allowed to review submissions")
+        submission = self.daily_submissions.get(submission_id)
+        if submission is None:
+            raise KeyError(submission_id)
+        submission.review_status = request.review_status
+        submission.reviewed_by = request.reviewed_by
+        if request.notes:
+            submission.notes = f"{submission.notes} | review: {request.notes}".strip(" |")
+        return submission
 
     def import_facilities(self, request: RegistryImportRequest) -> list[Facility]:
         imported = []
@@ -118,6 +209,43 @@ class IndiaSurveillanceService:
             closure_requirement=report.closure_note or "Investigation complete, CAPA logged, and recurrence review scheduled.",
         )
 
+    def get_dashboard(self, user: UserIdentity) -> DashboardSnapshot:
+        submissions = self.list_daily_submissions(user)
+        reports = self._reports_for_user_scope(user)
+        alerts = []
+        if any(item.escalation_required for item in submissions):
+            alerts.append(
+                DashboardAlert(
+                    alert_id="ALERT-ESC-001",
+                    severity="severe",
+                    title="Escalation required in daily surveillance feed",
+                    detail="At least one department submission has escalation_required=true.",
+                    owner_role="Facility safety officer" if user.role.startswith("facility") else "State cell analyst",
+                )
+            )
+        if any(item.severe_events > 0 for item in submissions):
+            alerts.append(
+                DashboardAlert(
+                    alert_id="ALERT-SEV-001",
+                    severity="moderate",
+                    title="Severe event recorded in daily submission",
+                    detail="Daily surveillance data contains at least one severe event requiring review.",
+                    owner_role="State cell analyst",
+                )
+            )
+        return DashboardSnapshot(
+            scope=user.role,
+            indicators=[
+                DashboardIndicator(label="Daily submissions", value=len(submissions), trend="stable"),
+                DashboardIndicator(label="Pending review", value=len([s for s in submissions if s.review_status == "submitted"]), trend="watch"),
+                DashboardIndicator(label="Open reports", value=len([r for r in reports if r.status != "closed"]), trend="watch"),
+                DashboardIndicator(label="Severe daily events", value=sum(s.severe_events for s in submissions), trend="up"),
+            ],
+            alerts=alerts,
+            submissions_pending_review=len([s for s in submissions if s.review_status == "submitted"]),
+            reports_open=len([r for r in reports if r.status != "closed"]),
+        )
+
     def get_integration_profile(self) -> IntegrationProfile:
         return IntegrationProfile(
             target_systems=[
@@ -152,3 +280,14 @@ class IndiaSurveillanceService:
         if report is None:
             raise KeyError(report_id)
         return report
+
+    def _reports_for_user_scope(self, user: UserIdentity) -> list[EventReport]:
+        reports = self.snapshot.reports
+        if user.role == "facility_reporter":
+            return [item for item in reports if item.facility_id == user.facility_id]
+        if user.role == "facility_safety_officer":
+            return [item for item in reports if item.facility_id == user.facility_id]
+        if user.role == "state_cell_analyst":
+            facility_ids = {item.facility_id for item in self.snapshot.facilities if item.state == user.state}
+            return [item for item in reports if item.facility_id in facility_ids]
+        return reports

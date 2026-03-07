@@ -19,6 +19,42 @@ body {
   background: radial-gradient(circle at top left, #f7d4b2 0, transparent 30%), linear-gradient(180deg, #f4efe5 0%, #e3e9ee 100%);
 }
 
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-panel {
+  width: min(640px, 100%);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 16px 36px rgba(22,37,50,0.08);
+}
+
+.login-form, .daily-form {
+  display: grid;
+  gap: 12px;
+}
+
+.login-form label, .daily-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.demo-credentials {
+  margin-top: 16px;
+  display: grid;
+  gap: 4px;
+}
+
+.error-text { color: var(--bad); }
+.compact-hero { align-items: center; }
+
 .page-shell {
   max-width: 1360px;
   margin: 0 auto;
@@ -85,10 +121,25 @@ h1 {
 .policy-row { padding: 10px 0; border-bottom: 1px solid var(--line); }
 .selector-label { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; color: var(--muted); font-size: 14px; }
 select, button { font: inherit; }
-select { border-radius: 12px; border: 1px solid var(--line); padding: 10px 12px; background: #fff; }
+select, input, textarea { border-radius: 12px; border: 1px solid var(--line); padding: 10px 12px; background: #fff; }
+textarea { min-height: 92px; resize: vertical; }
 .action-row { display: flex; gap: 8px; margin-top: 10px; }
 .action-row button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 12px; cursor: pointer; }
 .action-row button:hover { background: var(--accent-soft); }
+.panel button, .login-form button, .daily-form button, .hero-card button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.checkbox-row {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+.checkbox-row input { width: auto; }
+.alert-stack { display: grid; gap: 10px; margin-top: 12px; }
 
 @media (max-width: 1100px) {
   .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }

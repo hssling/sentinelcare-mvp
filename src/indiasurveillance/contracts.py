@@ -99,6 +99,92 @@ class UserIdentity(BaseModel):
     state: str | None = None
     district: str | None = None
     facility_id: str | None = None
+    department_id: str | None = None
+    username: str | None = None
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class SessionToken(BaseModel):
+    access_token: str
+    token_type: str = "demo-bearer"
+    user: UserIdentity
+
+
+class Department(BaseModel):
+    department_id: str
+    facility_id: str
+    name: str
+    category: Literal["clinical", "support", "quality", "administrative"]
+    reporting_enabled: bool = True
+
+
+class DailySurveillanceSubmission(BaseModel):
+    submission_id: str
+    submission_date: date
+    facility_id: str
+    department_id: str
+    submitted_by: str
+    patient_days: int
+    near_misses: int
+    no_harm_events: int
+    harm_events: int
+    severe_events: int
+    medication_events: int
+    procedure_events: int
+    infection_events: int
+    diagnostic_events: int
+    escalation_required: bool = False
+    notes: str = ""
+    reviewed_by: str | None = None
+    review_status: Literal["submitted", "reviewed", "actioned"] = "submitted"
+
+
+class DailySubmissionCreate(BaseModel):
+    submission_date: date
+    department_id: str
+    patient_days: int
+    near_misses: int
+    no_harm_events: int
+    harm_events: int
+    severe_events: int
+    medication_events: int
+    procedure_events: int
+    infection_events: int
+    diagnostic_events: int
+    escalation_required: bool = False
+    notes: str = ""
+
+
+class SubmissionReviewRequest(BaseModel):
+    review_status: Literal["reviewed", "actioned"]
+    reviewed_by: str
+    notes: str = ""
+
+
+class DashboardIndicator(BaseModel):
+    label: str
+    value: int
+    trend: str
+
+
+class DashboardAlert(BaseModel):
+    alert_id: str
+    severity: Severity
+    title: str
+    detail: str
+    owner_role: str
+
+
+class DashboardSnapshot(BaseModel):
+    scope: str
+    indicators: list[DashboardIndicator]
+    alerts: list[DashboardAlert]
+    submissions_pending_review: int
+    reports_open: int
 
 
 class FacilityImportRecord(BaseModel):

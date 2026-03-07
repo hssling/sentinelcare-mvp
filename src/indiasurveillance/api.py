@@ -3,18 +3,45 @@ from __future__ import annotations
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .auth import demo_user_header, resolve_user
-from .contracts import ClosureRequest, RegistryImportRequest, TriageRequest
+from .auth import demo_user_header, resolve_user, session_header
+from .contracts import (
+    ClosureRequest,
+    DailySubmissionCreate,
+    LoginRequest,
+    RegistryImportRequest,
+    SubmissionReviewRequest,
+    TriageRequest,
+)
 from .service import IndiaSurveillanceService
 
 service = IndiaSurveillanceService()
-app = FastAPI(title="India Patient Safety Surveillance System", version="0.1.0")
+app = FastAPI(title="India Patient Safety Surveillance System", version="0.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def session_user(token: str | None = Depends(session_header)):
+    try:
+        return service.resolve_session(token)
+    except PermissionError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+
+@app.post("/auth/login")
+def login(request: LoginRequest):
+    try:
+        return service.login(request)
+    except PermissionError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+
+@app.get("/me")
+def me(user=Depends(session_user)):
+    return user
 
 
 @app.get("/health")
@@ -32,9 +59,46 @@ def facilities():
     return service.get_snapshot().facilities
 
 
+@app.get("/departments")
+def departments(facility_id: str | None = None, user=Depends(session_user)):
+    if user.role in {"facility_reporter", "facility_safety_officer"}:
+        facility_id = user.facility_id
+    return service.list_departments(facility_id)
+
+
 @app.get("/reports")
 def reports():
     return service.get_snapshot().reports
+
+
+@app.get("/daily-submissions")
+def daily_submissions(user=Depends(session_user)):
+    return service.list_daily_submissions(user)
+
+
+@app.post("/daily-submissions")
+def create_daily_submission(request: DailySubmissionCreate, user=Depends(session_user)):
+    try:
+        return service.create_daily_submission(request, user)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown department_id: {exc.args[0]}") from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@app.post("/daily-submissions/{submission_id}/review")
+def review_daily_submission(submission_id: str, request: SubmissionReviewRequest, user=Depends(session_user)):
+    try:
+        return service.review_submission(submission_id, request, user)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown submission_id: {exc.args[0]}") from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@app.get("/dashboard")
+def dashboard(user=Depends(session_user)):
+    return service.get_dashboard(user)
 
 
 @app.get("/signals")

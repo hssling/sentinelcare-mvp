@@ -1,5 +1,15 @@
+from datetime import date
+
+from indiasurveillance.contracts import (
+    ClosureRequest,
+    DailySubmissionCreate,
+    FacilityImportRecord,
+    LoginRequest,
+    RegistryImportRequest,
+    SubmissionReviewRequest,
+    TriageRequest,
+)
 from indiasurveillance.service import IndiaSurveillanceService
-from indiasurveillance.contracts import ClosureRequest, FacilityImportRecord, RegistryImportRequest, TriageRequest
 
 
 def test_snapshot_has_reports_and_signals():
@@ -15,7 +25,7 @@ def test_trace_contains_explainable_steps():
     trace = service.get_trace(report_id)
     assert trace.report_id == report_id
     assert len(trace.trace_steps) >= 4
-    assert trace.trace_steps[0].step == 'input'
+    assert trace.trace_steps[0].step == "input"
 
 
 def test_registry_import_increases_facility_count():
@@ -56,3 +66,39 @@ def test_triage_and_close_workflow_updates_report():
     )
     assert closed.status == "closed"
     assert closed.closure_note is not None
+
+
+def test_login_submission_review_and_dashboard_flow():
+    service = IndiaSurveillanceService()
+    session = service.login(LoginRequest(username="tmk-ed", password="pass123"))
+    user = service.resolve_session(session.access_token)
+    submission = service.create_daily_submission(
+        DailySubmissionCreate(
+            submission_date=date(2026, 3, 8),
+            department_id="DEPT-TMK-ED",
+            patient_days=120,
+            near_misses=3,
+            no_harm_events=1,
+            harm_events=1,
+            severe_events=0,
+            medication_events=1,
+            procedure_events=0,
+            infection_events=0,
+            diagnostic_events=1,
+            notes="Routine daily feed.",
+        ),
+        user,
+    )
+    assert submission.submitted_by == user.user_id
+
+    manager = service.get_user("demo-fso-ka")
+    reviewed = service.review_submission(
+        submission.submission_id,
+        SubmissionReviewRequest(review_status="reviewed", reviewed_by=manager.name, notes="Reviewed in facility huddle"),
+        manager,
+    )
+    assert reviewed.review_status == "reviewed"
+
+    dashboard = service.get_dashboard(manager)
+    assert dashboard.submissions_pending_review >= 0
+    assert len(dashboard.indicators) >= 3
