@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520"><style>.c{fill:#f4f8fb;stroke:#1f3a4d;stroke-width:2}.t{font:700 18px Arial}.s{font:14px Arial}</style><text class="t" x="550" y="35" text-anchor="middle">Ten-domain SentinelCare patient safety taxonomy</text><g>
+<rect class="c" x="40" y="70" width="300" height="60" rx="10"/><text class="s" x="190" y="105" text-anchor="middle">1. Medication safety</text>
+<rect class="c" x="400" y="70" width="300" height="60" rx="10"/><text class="s" x="550" y="105" text-anchor="middle">2. Diagnostic safety</text>
+<rect class="c" x="760" y="70" width="300" height="60" rx="10"/><text class="s" x="910" y="105" text-anchor="middle">3. Procedure and surgical safety</text>
+<rect class="c" x="40" y="160" width="300" height="60" rx="10"/><text class="s" x="190" y="195" text-anchor="middle">4. Deterioration surveillance</text>
+<rect class="c" x="400" y="160" width="300" height="60" rx="10"/><text class="s" x="550" y="195" text-anchor="middle">5. Infection/environment safety</text>
+<rect class="c" x="760" y="160" width="300" height="60" rx="10"/><text class="s" x="910" y="195" text-anchor="middle">6. Lab and radiology process safety</text>
+<rect class="c" x="40" y="250" width="300" height="60" rx="10"/><text class="s" x="190" y="285" text-anchor="middle">7. Care transition safety</text>
+<rect class="c" x="400" y="250" width="300" height="60" rx="10"/><text class="s" x="550" y="285" text-anchor="middle">8. Documentation and communication safety</text>
+<rect class="c" x="760" y="250" width="300" height="60" rx="10"/><text class="s" x="910" y="285" text-anchor="middle">9. Device and equipment safety</text>
+<rect class="c" x="400" y="340" width="300" height="60" rx="10"/><text class="s" x="550" y="375" text-anchor="middle">10. Operational safety</text>
+</g></svg>
