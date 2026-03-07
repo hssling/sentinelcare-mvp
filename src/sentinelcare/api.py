@@ -24,6 +24,16 @@ class AgentRunRequest(BaseModel):
     event: Event
 
 
+class PolicySubmitRequest(BaseModel):
+    policy_name: str
+    definition: dict
+    submitted_by: str
+
+
+class PolicyApproveRequest(BaseModel):
+    approved_by: str
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -87,6 +97,47 @@ def review_alert(request: ReviewActionRequest) -> dict:
 @app.get("/metrics/summary")
 def metrics_summary() -> dict:
     return pipeline.summary()
+
+
+@app.get("/workflow/queue")
+def workflow_queue(status: str | None = None) -> dict:
+    return {"items": [i.model_dump(mode="json") for i in pipeline.list_queue(status)]}
+
+
+@app.post("/workflow/queue/escalate")
+def escalate_queue() -> dict:
+    return pipeline.escalate_overdue_queue()
+
+
+@app.post("/governance/policies/submit")
+def submit_policy(request: PolicySubmitRequest) -> dict:
+    policy = pipeline.submit_policy(request.policy_name, request.definition, request.submitted_by)
+    return {"policy": policy.model_dump(mode="json")}
+
+
+@app.post("/governance/policies/{policy_id}/approve")
+def approve_policy(policy_id: str, request: PolicyApproveRequest) -> dict:
+    try:
+        policy = pipeline.approve_policy(policy_id, request.approved_by)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {"policy": policy.model_dump(mode="json")}
+
+
+@app.get("/governance/policies")
+def list_policies(status: str | None = None) -> dict:
+    return {"policies": [p.model_dump(mode="json") for p in pipeline.list_policies(status)]}
+
+
+@app.post("/validation/report")
+def create_validation_report(report_type: str = "operational_validation") -> dict:
+    report = pipeline.generate_validation_report(report_type=report_type)
+    return {"report": report.model_dump(mode="json")}
+
+
+@app.get("/validation/reports")
+def list_validation_reports() -> dict:
+    return {"reports": [r.model_dump(mode="json") for r in pipeline.list_validation_reports()]}
 
 
 def run() -> None:

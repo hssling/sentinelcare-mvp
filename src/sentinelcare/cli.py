@@ -13,6 +13,27 @@ def main() -> None:
 
     print(json.dumps({"baseline_demo": pipeline.run_full_workflow(demo_events())}, indent=2))
 
+    policy = pipeline.submit_policy(
+        policy_name="critical_result_closure_policy",
+        definition={"ack_timeout_minutes": 30, "escalate_after_minutes": 45},
+        submitted_by="quality_lead",
+    )
+    approved = pipeline.approve_policy(policy.policy_id, approved_by="governance_chair")
+    validation = pipeline.generate_validation_report()
+    print(
+        json.dumps(
+            {
+                "governance_and_validation": {
+                    "submitted_policy": policy.model_dump(mode="json"),
+                    "approved_policy": approved.model_dump(mode="json"),
+                    "validation_report": validation.model_dump(mode="json"),
+                    "workflow_queue_open": len([q for q in pipeline.list_queue() if q.status == "open"]),
+                }
+            },
+            indent=2,
+        )
+    )
+
     result = pipeline.process_events(demo_events())
     if result.alerts:
         first_alert = result.alerts[-1]

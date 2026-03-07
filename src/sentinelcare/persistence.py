@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from .contracts import AgentTask, Alert, Event, ReviewAction
+from .contracts import AgentTask, Alert, Event, PolicyVersion, QueueItem, ReviewAction, ValidationReport
 
 try:
     from supabase import Client, create_client
@@ -85,3 +85,47 @@ class SupabaseRepository:
             on_conflict="action_id",
         ).execute()
 
+    def save_queue_item(self, item: QueueItem) -> None:
+        self.client.table("workflow_queue").upsert(
+            {
+                "queue_id": item.queue_id,
+                "alert_id": item.alert_id,
+                "encounter_id": item.encounter_id,
+                "patient_id": item.patient_id,
+                "priority": item.priority,
+                "assigned_role": item.assigned_role,
+                "due_at": item.due_at.isoformat(),
+                "status": item.status,
+                "escalation_level": item.escalation_level,
+                "created_at": item.created_at.isoformat(),
+                "updated_at": item.updated_at.isoformat(),
+            },
+            on_conflict="queue_id",
+        ).execute()
+
+    def save_policy_version(self, policy: PolicyVersion) -> None:
+        self.client.table("policy_versions").upsert(
+            {
+                "policy_id": policy.policy_id,
+                "policy_name": policy.policy_name,
+                "version": policy.version,
+                "status": policy.status,
+                "definition": policy.definition,
+                "submitted_by": policy.submitted_by,
+                "approved_by": policy.approved_by,
+                "approved_at": policy.approved_at.isoformat() if policy.approved_at else None,
+                "created_at": policy.created_at.isoformat(),
+            },
+            on_conflict="policy_id",
+        ).execute()
+
+    def save_validation_report(self, report: ValidationReport) -> None:
+        self.client.table("validation_reports").upsert(
+            {
+                "report_id": report.report_id,
+                "report_type": report.report_type,
+                "generated_at": report.generated_at.isoformat(),
+                "payload": report.payload,
+            },
+            on_conflict="report_id",
+        ).execute()

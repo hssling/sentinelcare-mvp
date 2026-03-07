@@ -59,3 +59,24 @@ def test_capability_demo_generates_rich_outputs() -> None:
     assert "critical_result_closure" in report["alerts_by_domain"]
     assert "deterioration_surveillance" in report["alerts_by_domain"]
     assert report["auto_review_actions_recorded"] >= 1
+
+
+def test_queue_governance_validation_features() -> None:
+    pipeline = SentinelCarePipeline()
+    pipeline.process_events(demo_events())
+    queue = pipeline.list_queue()
+    assert len(queue) >= 1
+
+    escalated = pipeline.escalate_overdue_queue()
+    assert "escalated_items" in escalated
+
+    policy = pipeline.submit_policy(
+        policy_name="sepsis_bundle_policy",
+        definition={"threshold": 0.8, "window_minutes": 60},
+        submitted_by="quality_lead",
+    )
+    approved = pipeline.approve_policy(policy.policy_id, approved_by="governance_chair")
+    assert approved.status == "approved_active"
+
+    report = pipeline.generate_validation_report()
+    assert report.payload["summary"]["alerts_total"] >= 1

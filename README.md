@@ -49,6 +49,13 @@ Operational endpoint:
 - `POST /agents/run`
 - `GET /demo/scenarios`
 - `POST /demo/capability-run`
+- `GET /workflow/queue`
+- `POST /workflow/queue/escalate`
+- `POST /governance/policies/submit`
+- `POST /governance/policies/{policy_id}/approve`
+- `GET /governance/policies`
+- `POST /validation/report`
+- `GET /validation/reports`
 
 ## Local development
 

@@ -23,6 +23,7 @@
 3. Set env vars:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_API_BASE_URL` (FastAPI base URL, e.g. `https://<api-host>`)
 
 ## Backend setup
 
@@ -39,7 +40,7 @@
 - `NETLIFY_SITE_ID`
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_API_BASE_URL`
 - `SUPABASE_ACCESS_TOKEN`
 - `SUPABASE_PROJECT_REF`
 - `SUPABASE_DB_PASSWORD`
-

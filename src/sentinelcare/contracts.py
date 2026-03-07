@@ -66,6 +66,38 @@ class ProcessingResult(BaseModel):
     tasks: list[AgentTask]
 
 
+class QueueItem(BaseModel):
+    queue_id: str
+    alert_id: str
+    encounter_id: str
+    patient_id: str
+    priority: str
+    assigned_role: str
+    due_at: datetime
+    status: str = "open"
+    escalation_level: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class PolicyVersion(BaseModel):
+    policy_id: str
+    policy_name: str
+    version: str
+    status: str
+    definition: dict[str, Any]
+    submitted_by: str
+    approved_by: str | None = None
+    approved_at: datetime | None = None
+    created_at: datetime
+
+
+class ValidationReport(BaseModel):
+    report_id: str
+    report_type: str
+    generated_at: datetime
+    payload: dict[str, Any]
+
+
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
-

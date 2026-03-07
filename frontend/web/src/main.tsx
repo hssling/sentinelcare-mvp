@@ -40,6 +40,7 @@ type DemoEvent = {
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const supabase = supabaseUrl && supabaseAnon ? createClient(supabaseUrl, supabaseAnon) : null;
 
 const AGENT_PURPOSE = [
@@ -111,14 +112,29 @@ function App() {
   const [events, setEvents] = React.useState<EventRow[]>([]);
   const [tasks, setTasks] = React.useState<AgentTaskRow[]>([]);
   const [error, setError] = React.useState<string>("");
-  const [source, setSource] = React.useState<"supabase" | "simulation">("simulation");
+  const [source, setSource] = React.useState<"api" | "supabase" | "simulation">("simulation");
+  const [apiReport, setApiReport] = React.useState<any | null>(null);
 
   const simulation = React.useMemo(() => simulateAlerts(DEMO_EVENTS), []);
 
   React.useEffect(() => {
     async function load() {
+      if (apiBaseUrl) {
+        try {
+          const capability = await fetch(`${apiBaseUrl}/demo/capability-run`, { method: "POST" });
+          if (capability.ok) {
+            const report = await capability.json();
+            setApiReport(report);
+            setSource("api");
+            return;
+          }
+        } catch {
+          // fall through to supabase
+        }
+      }
+
       if (!supabase) {
-        setError("Supabase env vars not configured. Showing simulation mode.");
+        setError("API/Supabase not configured. Showing simulation mode.");
         setSource("simulation");
         return;
       }
@@ -167,7 +183,12 @@ function App() {
       </section>
 
       <section className="banner">
-        <strong>Mode:</strong> {source === "supabase" ? "Live Supabase Data" : "Simulation Demo Data"}
+        <strong>Mode:</strong>{" "}
+        {source === "api"
+          ? "Live API Orchestrated Demo"
+          : source === "supabase"
+            ? "Live Supabase Data"
+            : "Simulation Demo Data"}
         {error ? <span className="error-inline"> | {error}</span> : null}
       </section>
 
@@ -237,6 +258,25 @@ function App() {
                 ))}
               </tbody>
             </table>
+          ) : source === "api" && apiReport ? (
+            <div className="stat-grid">
+              <div className="stat">
+                <span>Total Alerts</span>
+                <strong>{apiReport.alerts_generated || 0}</strong>
+              </div>
+              <div className="stat">
+                <span>Medication</span>
+                <strong>{apiReport.alerts_by_domain?.medication_safety || 0}</strong>
+              </div>
+              <div className="stat">
+                <span>Critical Results</span>
+                <strong>{apiReport.alerts_by_domain?.critical_result_closure || 0}</strong>
+              </div>
+              <div className="stat">
+                <span>Deterioration</span>
+                <strong>{apiReport.alerts_by_domain?.deterioration_surveillance || 0}</strong>
+              </div>
+            </div>
           ) : (
             <div className="stat-grid">
               <div className="stat">
@@ -265,7 +305,13 @@ function App() {
           <div className="stat-grid">
             <div className="stat">
               <span>Tasks Executed</span>
-              <strong>{source === "supabase" ? tasks.length : simulation.estimatedTasks}</strong>
+              <strong>
+                {source === "api"
+                  ? apiReport?.tasks_generated || 0
+                  : source === "supabase"
+                    ? tasks.length
+                    : simulation.estimatedTasks}
+              </strong>
             </div>
             <div className="stat">
               <span>Agents Active</span>
