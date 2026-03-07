@@ -7,8 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .auth import session_header
 from .contracts import (
+    AIAssistRequest,
+    AIProviderConfigCreate,
     ClosureRequest,
     DailySubmissionCreate,
+    EventCaseCreate,
+    EventCaseReviewRequest,
     LoginRequest,
     NotificationAcknowledgeRequest,
     RegistryImportRequest,
@@ -19,7 +23,7 @@ from .contracts import (
 from .service import IndiaSurveillanceService
 
 service = IndiaSurveillanceService()
-app = FastAPI(title="India Patient Safety Surveillance System", version="0.3.0")
+app = FastAPI(title="India Patient Safety Surveillance System", version="0.4.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -76,6 +80,31 @@ def departments(facility_id: str | None = None, user=Depends(session_user)):
 @app.get("/reports")
 def reports(user=Depends(session_user)):
     return service.list_reports(user)
+
+
+@app.get("/event-cases")
+def event_cases(user=Depends(session_user)):
+    return service.list_event_cases(user)
+
+
+@app.post("/event-cases")
+def create_event_case(request: EventCaseCreate, user=Depends(session_user)):
+    try:
+        return service.create_event_case(request, user)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown department_id: {exc.args[0]}") from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@app.post("/event-cases/{case_id}/review")
+def review_event_case(case_id: str, request: EventCaseReviewRequest, user=Depends(session_user)):
+    try:
+        return service.review_event_case(case_id, request, user)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown case_id: {exc.args[0]}") from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @app.get("/daily-submissions")
@@ -209,6 +238,29 @@ def close_report(report_id: str, request: ClosureRequest, user=Depends(session_u
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
+@app.get("/ai/providers")
+def ai_provider_catalog(user=Depends(session_user)):
+    return {
+        "catalog": service.list_ai_provider_catalog(),
+        "configs": service.list_ai_provider_configs(user),
+    }
+
+
+@app.post("/ai/providers")
+def upsert_ai_provider(request: AIProviderConfigCreate, user=Depends(session_user)):
+    return service.upsert_ai_provider_config(request, user)
+
+
+@app.post("/ai/assist")
+def ai_assist(request: AIAssistRequest, user=Depends(session_user)):
+    try:
+        return service.ai_assist_case(request, user)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @app.get("/sources")
 def sources() -> dict[str, list[str]]:
     return {
@@ -219,6 +271,14 @@ def sources() -> dict[str, list[str]]:
             "https://nhm.gov.in/",
             "https://ipc.gov.in/PvPI/about.html",
             "https://nabh.co/nabh-standards/",
+            "https://platform.openai.com/api-keys",
+            "https://console.anthropic.com/settings/keys",
+            "https://aistudio.google.com/app/apikey",
+            "https://openrouter.ai/settings/keys",
+            "https://console.groq.com/keys",
+            "https://api.together.xyz/settings/api-keys",
+            "https://dashboard.cohere.com/api-keys",
+            "https://console.x.ai/",
         ]
     }
 

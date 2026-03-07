@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from .contracts import (
     DailySurveillanceSubmission,
     Department,
+    EventCase,
     EventReport,
     Facility,
     PilotStateCell,
@@ -16,7 +17,7 @@ from .contracts import (
 
 
 def build_demo_snapshot() -> SurveillanceSnapshot:
-    now = datetime(2026, 3, 8, 9, 0, 0)
+    now = datetime(2026, 3, 8, 9, 0, 0, tzinfo=timezone.utc)
     facilities = [
         Facility(
             facility_id="FAC-TMK-001",
@@ -149,7 +150,7 @@ def build_demo_snapshot() -> SurveillanceSnapshot:
     ]
     return SurveillanceSnapshot(
         overview={
-            "reporting_period": "March 2026 demo snapshot",
+            "reporting_period": "March 2026 pilot snapshot",
             "facilities_onboarded": 42,
             "states_covered": 8,
             "reports_received": 186,
@@ -259,7 +260,7 @@ def build_demo_departments() -> list[Department]:
 
 def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
     today = date(2026, 3, 8)
-    now = datetime(2026, 3, 8, 9, 0, 0)
+    now = datetime(2026, 3, 8, 9, 0, 0, tzinfo=timezone.utc)
     return [
         DailySurveillanceSubmission(
             submission_id="SUB-TMK-001",
@@ -268,6 +269,11 @@ def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
             department_id="DEPT-TMK-ED",
             submitted_by="demo-ed-ka",
             patient_days=118,
+            admissions=42,
+            discharges=39,
+            surgeries=0,
+            deliveries=0,
+            critical_results_count=4,
             near_misses=4,
             no_harm_events=2,
             harm_events=1,
@@ -276,6 +282,9 @@ def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
             procedure_events=0,
             infection_events=0,
             diagnostic_events=1,
+            staffing_shortfall_flag=True,
+            crowding_flag=True,
+            system_downtime_flag=False,
             escalation_required=False,
             notes="High near-miss load during evening shift handover.",
             created_at=now,
@@ -288,6 +297,11 @@ def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
             department_id="DEPT-TMK-ICU",
             submitted_by="demo-icu-ka",
             patient_days=36,
+            admissions=9,
+            discharges=7,
+            surgeries=2,
+            deliveries=0,
+            critical_results_count=3,
             near_misses=2,
             no_harm_events=1,
             harm_events=1,
@@ -296,9 +310,108 @@ def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
             procedure_events=0,
             infection_events=1,
             diagnostic_events=0,
+            staffing_shortfall_flag=False,
+            crowding_flag=False,
+            system_downtime_flag=False,
             escalation_required=True,
             notes="One deterioration escalation breach triggered review.",
             created_at=now,
             updated_at=now,
+        ),
+    ]
+
+
+def build_demo_event_cases() -> list[EventCase]:
+    now = datetime(2026, 3, 8, 9, 0, 0, tzinfo=timezone.utc)
+    return [
+        EventCase(
+            case_id="CASE-TMK-1001",
+            source_mode="manual_event_report",
+            created_at=now - timedelta(hours=10),
+            updated_at=now - timedelta(hours=4),
+            facility_id="FAC-TMK-001",
+            department_id="DEPT-TMK-ED",
+            report_id="EVT-IND-1001",
+            event_timestamp=now - timedelta(hours=16),
+            encounter_setting="emergency",
+            shift="evening",
+            patient_age_band="45-64",
+            patient_sex="female",
+            special_population_flags=[],
+            encounter_id_local="TMK-ER-10291",
+            high_risk_flag=True,
+            domain="medication",
+            deviation_class="contradiction",
+            process_stage="order verification",
+            event_type="allergy contraindication order",
+            actual_harm="No harm reached patient",
+            potential_harm="Severe allergic reaction",
+            severity_level="moderate",
+            preventability_rating="high",
+            detectability_rating="high",
+            recurrence_flag=True,
+            event_summary="Antibiotic order conflicted with allergy history until pharmacist interception.",
+            what_was_expected="Allergy conflict should block ordering at verification stage.",
+            what_happened="Order proceeded and was intercepted only during pharmacy verification.",
+            immediate_action_taken="Order held, prescriber contacted, alternate antibiotic chosen.",
+            evidence_source="manual narrative + pharmacy order review",
+            linked_system_trace_id="SC-TRACE-9001",
+            linked_policy_version="POL-IND-001",
+            contributing_factors=["documentation_quality", "handover_communication", "human_factor_cognitive"],
+            triage_status="investigating",
+            investigation_method="mini RCA",
+            root_cause_category="documentation mismatch",
+            corrective_action="Add allergy reconciliation checkpoint in ED admission workflow.",
+            preventive_action="Deploy allergy contradiction rules from SentinelCare once connected.",
+            owner_assigned="Karnataka Facility Safety Officer",
+            due_date=date(2026, 3, 12),
+            closure_status="open",
+        ),
+        EventCase(
+            case_id="CASE-JPR-2001",
+            source_mode="sentinelcare_detected_event",
+            created_at=now - timedelta(days=1),
+            updated_at=now - timedelta(hours=6),
+            facility_id="FAC-DLH-014",
+            department_id="DEPT-JPR-ED",
+            report_id="EVT-IND-1002",
+            event_timestamp=now - timedelta(days=1, hours=5),
+            encounter_setting="emergency",
+            shift="night",
+            patient_age_band="18-44",
+            patient_sex="male",
+            special_population_flags=["critical_care"],
+            encounter_id_local="JPR-ED-77811",
+            high_risk_flag=True,
+            domain="deterioration",
+            deviation_class="harmful_delay",
+            process_stage="recognition and escalation",
+            event_type="sepsis escalation delay",
+            actual_harm="Delayed antibiotic and fluid bundle initiation",
+            potential_harm="Shock and ICU transfer",
+            severity_level="severe",
+            preventability_rating="high",
+            detectability_rating="moderate",
+            recurrence_flag=False,
+            event_summary="Sepsis pathway breach detected after repeated abnormal vitals and delayed escalation.",
+            what_was_expected="Escalation within protocol window after vital sign trigger.",
+            what_happened="Escalation delayed beyond threshold and senior review was late.",
+            immediate_action_taken="Rapid response activated and state review initiated.",
+            evidence_source="sentinelcare trace + vital sign stream",
+            linked_system_trace_id="SC-TRACE-9018",
+            linked_policy_version="POL-IND-002",
+            contributing_factors=["staffing_workload", "protocol_nonadherence", "diagnostic_delay"],
+            triage_status="actioned",
+            investigation_method="full RCA",
+            root_cause_category="escalation pathway breach",
+            corrective_action="Mandatory sepsis escalation timer in ED.",
+            preventive_action="Statewide silent-mode deterioration monitor.",
+            owner_assigned="Rajasthan State Cell Analyst",
+            due_date=date(2026, 3, 10),
+            closure_status="open",
+            ai_summary="High-priority deterioration case with repeated escalation opportunity missed.",
+            ai_confidence=0.86,
+            ai_provider="openai",
+            ai_model="gpt-4.1-mini",
         ),
     ]

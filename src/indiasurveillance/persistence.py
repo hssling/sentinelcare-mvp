@@ -8,9 +8,12 @@ from typing import Any
 from supabase import Client, create_client
 
 from .contracts import (
+    AIProviderConfigStored,
     AuditLogRecord,
     DailySurveillanceSubmission,
     Department,
+    DomainBreakdownPoint,
+    EventCase,
     EventReport,
     Facility,
     NotificationRecord,
@@ -23,6 +26,7 @@ from .contracts import (
 from .demo_data import (
     build_demo_daily_submissions,
     build_demo_departments,
+    build_demo_event_cases,
     build_demo_snapshot,
     build_demo_state_cells,
     build_demo_users,
@@ -59,6 +63,18 @@ class StorageBackend(ABC):
 
     @abstractmethod
     def list_reports(self) -> list[EventReport]: ...
+
+    @abstractmethod
+    def list_event_cases(self) -> list[EventCase]: ...
+
+    @abstractmethod
+    def create_event_case(self, event_case: EventCase) -> EventCase: ...
+
+    @abstractmethod
+    def update_event_case(self, event_case: EventCase) -> EventCase: ...
+
+    @abstractmethod
+    def get_event_case(self, case_id: str) -> EventCase | None: ...
 
     @abstractmethod
     def list_signals(self) -> list[SafetySignal]: ...
@@ -120,6 +136,21 @@ class StorageBackend(ABC):
     @abstractmethod
     def trend_points(self, facility_id: str | None = None, state: str | None = None) -> list[TrendPoint]: ...
 
+    @abstractmethod
+    def domain_breakdown(self, facility_id: str | None = None, state: str | None = None) -> list[DomainBreakdownPoint]: ...
+
+    @abstractmethod
+    def list_ai_provider_configs(self, owner_user_id: str) -> list[AIProviderConfigStored]: ...
+
+    @abstractmethod
+    def upsert_ai_provider_config(self, config: AIProviderConfigStored) -> AIProviderConfigStored: ...
+
+    @abstractmethod
+    def get_ai_provider_config(self, owner_user_id: str, config_id: str) -> AIProviderConfigStored | None: ...
+
+    @abstractmethod
+    def get_active_ai_provider_config(self, owner_user_id: str) -> AIProviderConfigStored | None: ...
+
 
 class InMemoryStorage(StorageBackend):
     def __init__(self) -> None:
@@ -127,6 +158,7 @@ class InMemoryStorage(StorageBackend):
         now = datetime(2026, 3, 8, 9, 0, 0, tzinfo=timezone.utc)
         self.facilities = {item.facility_id: item for item in snapshot.facilities}
         self.reports = {item.report_id: item for item in snapshot.reports}
+        self.event_cases = {item.case_id: item for item in build_demo_event_cases()}
         self.signals = {item.signal_id: item for item in snapshot.signals}
         self.policies = {item.policy_id: item for item in snapshot.policies}
         self.departments = {item.department_id: item for item in build_demo_departments()}
@@ -135,6 +167,7 @@ class InMemoryStorage(StorageBackend):
         self.notifications: dict[str, NotificationRecord] = {}
         self.audit_logs: dict[str, AuditLogRecord] = {}
         self.users: dict[str, UserRecord] = {}
+        self.ai_provider_configs: dict[str, AIProviderConfigStored] = {}
         for user in build_demo_users():
             password_hash, password_salt = hash_password("pass123")
             self.users[user.user_id] = UserRecord(
@@ -153,6 +186,20 @@ class InMemoryStorage(StorageBackend):
 
     def list_reports(self) -> list[EventReport]:
         return list(self.reports.values())
+
+    def list_event_cases(self) -> list[EventCase]:
+        return list(self.event_cases.values())
+
+    def create_event_case(self, event_case: EventCase) -> EventCase:
+        self.event_cases[event_case.case_id] = event_case
+        return event_case
+
+    def update_event_case(self, event_case: EventCase) -> EventCase:
+        self.event_cases[event_case.case_id] = event_case
+        return event_case
+
+    def get_event_case(self, case_id: str) -> EventCase | None:
+        return self.event_cases.get(case_id)
 
     def list_signals(self) -> list[SafetySignal]:
         return list(self.signals.values())
@@ -224,19 +271,61 @@ class InMemoryStorage(StorageBackend):
 
     def trend_points(self, facility_id: str | None = None, state: str | None = None) -> list[TrendPoint]:
         submissions = self.list_daily_submissions()
+        cases = self.list_event_cases()
         if facility_id:
             submissions = [item for item in submissions if item.facility_id == facility_id]
+            cases = [item for item in cases if item.facility_id == facility_id]
         if state:
             facility_ids = {item.facility_id for item in self.list_facilities() if item.state == state}
             submissions = [item for item in submissions if item.facility_id in facility_ids]
-        buckets: dict[date, dict[str, int]] = defaultdict(lambda: {"patient_days": 0, "near_misses": 0, "harm_events": 0, "severe_events": 0})
+            cases = [item for item in cases if item.facility_id in facility_ids]
+        buckets: dict[date, dict[str, int]] = defaultdict(
+            lambda: {"patient_days": 0, "near_misses": 0, "harm_events": 0, "severe_events": 0, "event_cases": 0, "sentinel_cases": 0}
+        )
         for item in submissions:
             bucket = buckets[item.submission_date]
             bucket["patient_days"] += item.patient_days
             bucket["near_misses"] += item.near_misses
             bucket["harm_events"] += item.harm_events
             bucket["severe_events"] += item.severe_events
+        for item in cases:
+            bucket = buckets[item.event_timestamp.date()]
+            bucket["event_cases"] += 1
+            if item.severity_level == "sentinel":
+                bucket["sentinel_cases"] += 1
         return [TrendPoint(date=key, **value) for key, value in sorted(buckets.items())]
+
+    def domain_breakdown(self, facility_id: str | None = None, state: str | None = None) -> list[DomainBreakdownPoint]:
+        cases = self.list_event_cases()
+        if facility_id:
+            cases = [item for item in cases if item.facility_id == facility_id]
+        if state:
+            facility_ids = {item.facility_id for item in self.list_facilities() if item.state == state}
+            cases = [item for item in cases if item.facility_id in facility_ids]
+        counts: dict[str, int] = defaultdict(int)
+        for item in cases:
+            counts[item.domain] += 1
+        return [DomainBreakdownPoint(domain=key, count=value) for key, value in sorted(counts.items())]
+
+    def list_ai_provider_configs(self, owner_user_id: str) -> list[AIProviderConfigStored]:
+        return [item for item in self.ai_provider_configs.values() if item.owner_user_id == owner_user_id]
+
+    def upsert_ai_provider_config(self, config: AIProviderConfigStored) -> AIProviderConfigStored:
+        if config.is_active:
+            for existing in self.ai_provider_configs.values():
+                if existing.owner_user_id == config.owner_user_id:
+                    existing.is_active = existing.config_id == config.config_id
+        self.ai_provider_configs[config.config_id] = config
+        return config
+
+    def get_ai_provider_config(self, owner_user_id: str, config_id: str) -> AIProviderConfigStored | None:
+        config = self.ai_provider_configs.get(config_id)
+        if config and config.owner_user_id == owner_user_id:
+            return config
+        return None
+
+    def get_active_ai_provider_config(self, owner_user_id: str) -> AIProviderConfigStored | None:
+        return next((item for item in self.ai_provider_configs.values() if item.owner_user_id == owner_user_id and item.is_active), None)
 
 
 class SupabaseStorage(StorageBackend):
@@ -258,6 +347,8 @@ class SupabaseStorage(StorageBackend):
             self.client.table("policies").upsert(_serialize(policy)).execute()
         for report in memory.list_reports():
             self.client.table("event_reports").upsert(_serialize(report)).execute()
+        for event_case in memory.list_event_cases():
+            self.client.table("event_cases").upsert(_serialize(event_case)).execute()
         for signal in memory.list_signals():
             self.client.table("safety_signals").upsert(_serialize(signal)).execute()
         for submission in memory.list_daily_submissions():
@@ -265,10 +356,10 @@ class SupabaseStorage(StorageBackend):
         for user in memory.list_users():
             self.create_user(user)
 
-    def _rows(self, table: str, order: str | None = None) -> list[dict[str, Any]]:
+    def _rows(self, table: str, order: str | None = None, desc: bool = False) -> list[dict[str, Any]]:
         query = self.client.table(table).select("*")
         if order:
-            query = query.order(order)
+            query = query.order(order, desc=desc)
         response = query.execute()
         return list(response.data or [])
 
@@ -281,6 +372,38 @@ class SupabaseStorage(StorageBackend):
             row["event_date"] = _iso_date(row.get("event_date"))
             row["reported_at"] = _iso_datetime(row.get("reported_at"))
         return [EventReport(**row) for row in rows]
+
+    def list_event_cases(self) -> list[EventCase]:
+        rows = self._rows("event_cases", "event_timestamp", desc=True)
+        for row in rows:
+            row["created_at"] = _iso_datetime(row.get("created_at"))
+            row["updated_at"] = _iso_datetime(row.get("updated_at"))
+            row["event_timestamp"] = _iso_datetime(row.get("event_timestamp"))
+            row["due_date"] = _iso_date(row.get("due_date"))
+            row["closure_date"] = _iso_date(row.get("closure_date"))
+        return [EventCase(**row) for row in rows]
+
+    def create_event_case(self, event_case: EventCase) -> EventCase:
+        self.client.table("event_cases").insert(_serialize(event_case)).execute()
+        return event_case
+
+    def update_event_case(self, event_case: EventCase) -> EventCase:
+        payload = _serialize(event_case)
+        payload["updated_at"] = datetime.now(timezone.utc).isoformat()
+        self.client.table("event_cases").update(payload).eq("case_id", event_case.case_id).execute()
+        return event_case
+
+    def get_event_case(self, case_id: str) -> EventCase | None:
+        response = self.client.table("event_cases").select("*").eq("case_id", case_id).limit(1).execute()
+        if not response.data:
+            return None
+        row = dict(response.data[0])
+        row["created_at"] = _iso_datetime(row.get("created_at"))
+        row["updated_at"] = _iso_datetime(row.get("updated_at"))
+        row["event_timestamp"] = _iso_datetime(row.get("event_timestamp"))
+        row["due_date"] = _iso_date(row.get("due_date"))
+        row["closure_date"] = _iso_date(row.get("closure_date"))
+        return EventCase(**row)
 
     def list_signals(self) -> list[SafetySignal]:
         return [SafetySignal(**row) for row in self._rows("safety_signals", "signal_id")]
@@ -328,7 +451,7 @@ class SupabaseStorage(StorageBackend):
         return [Department(**row) for row in response.data or []]
 
     def list_daily_submissions(self) -> list[DailySurveillanceSubmission]:
-        rows = self._rows("daily_submissions", "submission_date")
+        rows = self._rows("daily_submissions", "submission_date", desc=True)
         for row in rows:
             row["submission_date"] = _iso_date(row.get("submission_date"))
             row["created_at"] = _iso_datetime(row.get("created_at"))
@@ -393,16 +516,70 @@ class SupabaseStorage(StorageBackend):
 
     def trend_points(self, facility_id: str | None = None, state: str | None = None) -> list[TrendPoint]:
         submissions = self.list_daily_submissions()
+        cases = self.list_event_cases()
         if facility_id:
             submissions = [item for item in submissions if item.facility_id == facility_id]
+            cases = [item for item in cases if item.facility_id == facility_id]
         if state:
             facility_ids = {item.facility_id for item in self.list_facilities() if item.state == state}
             submissions = [item for item in submissions if item.facility_id in facility_ids]
-        buckets: dict[date, dict[str, int]] = defaultdict(lambda: {"patient_days": 0, "near_misses": 0, "harm_events": 0, "severe_events": 0})
+            cases = [item for item in cases if item.facility_id in facility_ids]
+        buckets: dict[date, dict[str, int]] = defaultdict(
+            lambda: {"patient_days": 0, "near_misses": 0, "harm_events": 0, "severe_events": 0, "event_cases": 0, "sentinel_cases": 0}
+        )
         for item in submissions:
             bucket = buckets[item.submission_date]
             bucket["patient_days"] += item.patient_days
             bucket["near_misses"] += item.near_misses
             bucket["harm_events"] += item.harm_events
             bucket["severe_events"] += item.severe_events
+        for item in cases:
+            bucket = buckets[item.event_timestamp.date()]
+            bucket["event_cases"] += 1
+            if item.severity_level == "sentinel":
+                bucket["sentinel_cases"] += 1
         return [TrendPoint(date=key, **value) for key, value in sorted(buckets.items())]
+
+    def domain_breakdown(self, facility_id: str | None = None, state: str | None = None) -> list[DomainBreakdownPoint]:
+        cases = self.list_event_cases()
+        if facility_id:
+            cases = [item for item in cases if item.facility_id == facility_id]
+        if state:
+            facility_ids = {item.facility_id for item in self.list_facilities() if item.state == state}
+            cases = [item for item in cases if item.facility_id in facility_ids]
+        counts: dict[str, int] = defaultdict(int)
+        for item in cases:
+            counts[item.domain] += 1
+        return [DomainBreakdownPoint(domain=key, count=value) for key, value in sorted(counts.items())]
+
+    def list_ai_provider_configs(self, owner_user_id: str) -> list[AIProviderConfigStored]:
+        response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).order("updated_at", desc=True).execute()
+        rows = list(response.data or [])
+        for row in rows:
+            row["created_at"] = _iso_datetime(row.get("created_at"))
+            row["updated_at"] = _iso_datetime(row.get("updated_at"))
+        return [AIProviderConfigStored(**row) for row in rows]
+
+    def upsert_ai_provider_config(self, config: AIProviderConfigStored) -> AIProviderConfigStored:
+        if config.is_active:
+            self.client.table("ai_provider_configs").update({"is_active": False}).eq("owner_user_id", config.owner_user_id).execute()
+        self.client.table("ai_provider_configs").upsert(_serialize(config)).execute()
+        return config
+
+    def get_ai_provider_config(self, owner_user_id: str, config_id: str) -> AIProviderConfigStored | None:
+        response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).eq("config_id", config_id).limit(1).execute()
+        if not response.data:
+            return None
+        row = dict(response.data[0])
+        row["created_at"] = _iso_datetime(row.get("created_at"))
+        row["updated_at"] = _iso_datetime(row.get("updated_at"))
+        return AIProviderConfigStored(**row)
+
+    def get_active_ai_provider_config(self, owner_user_id: str) -> AIProviderConfigStored | None:
+        response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).eq("is_active", True).limit(1).execute()
+        if not response.data:
+            return None
+        row = dict(response.data[0])
+        row["created_at"] = _iso_datetime(row.get("created_at"))
+        row["updated_at"] = _iso_datetime(row.get("updated_at"))
+        return AIProviderConfigStored(**row)

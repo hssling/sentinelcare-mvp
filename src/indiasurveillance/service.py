@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import os
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from uuid import uuid4
 
+from .ai import assist_with_model, encrypt_api_key, mask_api_key, provider_catalog
 from .contracts import (
+    AIAssistRequest,
+    AIAssistResponse,
+    AIProviderConfigCreate,
+    AIProviderConfigStored,
+    AIProviderConfigView,
     AuditLogRecord,
     ClosureRequest,
     DailySubmissionCreate,
@@ -13,6 +19,9 @@ from .contracts import (
     DashboardIndicator,
     DashboardSnapshot,
     Department,
+    EventCase,
+    EventCaseCreate,
+    EventCaseReviewRequest,
     EventReport,
     EventTrace,
     Facility,
@@ -71,9 +80,8 @@ class IndiaSurveillanceService:
         return self._identity(user)
 
     def get_snapshot(self) -> SurveillanceSnapshot:
-        overview = self._overview()
         return SurveillanceSnapshot(
-            overview=overview,
+            overview=self._overview(),
             facilities=self.storage.list_facilities(),
             reports=self.storage.list_reports(),
             signals=self.storage.list_signals(),
@@ -95,6 +103,8 @@ class IndiaSurveillanceService:
             raise ValueError("Username already exists")
         if current_user.role == "facility_safety_officer":
             request.facility_id = current_user.facility_id
+            request.state = current_user.state
+            request.district = current_user.district
             if request.role not in {"facility_reporter", "facility_safety_officer"}:
                 raise PermissionError("Facility safety officer can only create facility-level accounts")
         if current_user.role == "state_cell_analyst":
@@ -135,19 +145,28 @@ class IndiaSurveillanceService:
         if user.role == "facility_safety_officer":
             return [item for item in submissions if item.facility_id == user.facility_id]
         if user.role == "state_cell_analyst":
-            facility_ids = {item.facility_id for item in self.storage.list_facilities() if item.state == user.state}
+            facility_ids = self._facility_ids_for_state(user.state)
             return [item for item in submissions if item.facility_id in facility_ids]
         return submissions
 
     def list_reports(self, user: UserIdentity) -> list[EventReport]:
         return self._reports_for_user_scope(user)
 
+    def list_event_cases(self, user: UserIdentity) -> list[EventCase]:
+        cases = self.storage.list_event_cases()
+        if user.role == "facility_reporter":
+            return [item for item in cases if item.department_id == user.department_id]
+        if user.role == "facility_safety_officer":
+            return [item for item in cases if item.facility_id == user.facility_id]
+        if user.role == "state_cell_analyst":
+            facility_ids = self._facility_ids_for_state(user.state)
+            return [item for item in cases if item.facility_id in facility_ids]
+        return cases
+
     def create_daily_submission(self, request: DailySubmissionCreate, user: UserIdentity) -> DailySurveillanceSubmission:
         if user.role not in {"facility_reporter", "facility_safety_officer"}:
             raise PermissionError("User is not allowed to submit daily surveillance data")
-        department = next((item for item in self.storage.list_departments() if item.department_id == request.department_id), None)
-        if department is None:
-            raise KeyError(request.department_id)
+        department = self._department(request.department_id)
         if user.facility_id and department.facility_id != user.facility_id:
             raise PermissionError("Department does not belong to the user's facility")
         now = datetime.now(timezone.utc)
@@ -192,6 +211,110 @@ class IndiaSurveillanceService:
         self.storage.update_daily_submission(submission)
         self._audit(user.user_id, "submission.review", "daily_submission", submission.submission_id, request.review_status)
         return submission
+
+    def create_event_case(self, request: EventCaseCreate, user: UserIdentity) -> EventCase:
+        if user.role not in {"facility_reporter", "facility_safety_officer", "district_reviewer", "state_cell_analyst", "national_analyst"}:
+            raise PermissionError("User is not allowed to create event cases")
+        department = self._department(request.department_id)
+        if user.facility_id and department.facility_id != user.facility_id:
+            raise PermissionError("Department does not belong to the user's facility")
+        now = datetime.now(timezone.utc)
+        event_case = EventCase(
+            case_id=f"CASE-{uuid4().hex[:10].upper()}",
+            facility_id=department.facility_id,
+            created_at=now,
+            updated_at=now,
+            due_date=(now + timedelta(days=7)).date(),
+            **request.model_dump(),
+        )
+        self.storage.create_event_case(event_case)
+        self._audit(user.user_id, "case.create", "event_case", event_case.case_id, event_case.event_summary)
+        if event_case.severity_level in {"severe", "sentinel"}:
+            self.storage.create_notification(
+                NotificationRecord(
+                    notification_id=f"NOT-{uuid4().hex[:10].upper()}",
+                    created_at=now,
+                    user_id=None,
+                    scope="facility",
+                    title="High-severity event case created",
+                    message=f"{event_case.case_id} requires escalation review for {event_case.severity_level} severity.",
+                    severity=event_case.severity_level,
+                    facility_id=event_case.facility_id,
+                    entity_type="event_case",
+                    entity_id=event_case.case_id,
+                )
+            )
+        return event_case
+
+    def review_event_case(self, case_id: str, request: EventCaseReviewRequest, user: UserIdentity) -> EventCase:
+        if user.role not in {"facility_safety_officer", "district_reviewer", "state_cell_analyst", "national_analyst"}:
+            raise PermissionError("User is not allowed to review event cases")
+        event_case = self.storage.get_event_case(case_id)
+        if event_case is None:
+            raise KeyError(case_id)
+        event_case.triage_status = request.triage_status
+        event_case.owner_assigned = request.owner_assigned
+        event_case.investigation_method = request.investigation_method
+        event_case.root_cause_category = request.root_cause_category
+        event_case.corrective_action = request.corrective_action
+        event_case.preventive_action = request.preventive_action
+        event_case.due_date = request.due_date
+        event_case.closure_status = request.closure_status
+        event_case.closure_quality_rating = request.closure_quality_rating
+        event_case.ai_human_override = request.ai_human_override
+        event_case.updated_at = datetime.now(timezone.utc)
+        if request.closure_status == "closed":
+            event_case.closure_date = date.today()
+        self.storage.update_event_case(event_case)
+        self._audit(user.user_id, "case.review", "event_case", case_id, request.triage_status)
+        return event_case
+
+    def list_ai_provider_catalog(self):
+        return provider_catalog()
+
+    def list_ai_provider_configs(self, user: UserIdentity) -> list[AIProviderConfigView]:
+        return [self._config_view(item) for item in self.storage.list_ai_provider_configs(user.user_id)]
+
+    def upsert_ai_provider_config(self, request: AIProviderConfigCreate, user: UserIdentity) -> AIProviderConfigView:
+        now = datetime.now(timezone.utc)
+        existing = self.storage.get_active_ai_provider_config(user.user_id)
+        config = AIProviderConfigStored(
+            config_id=existing.config_id if existing and existing.provider == request.provider else f"AICFG-{uuid4().hex[:10].upper()}",
+            owner_user_id=user.user_id,
+            provider=request.provider,
+            label=request.label,
+            model=request.model,
+            base_url=request.base_url or next(item.default_base_url for item in provider_catalog() if item.provider == request.provider),
+            api_key_ciphertext=encrypt_api_key(request.api_key),
+            api_key_masked=mask_api_key(request.api_key),
+            is_active=request.is_active,
+            created_at=existing.created_at if existing and existing.provider == request.provider else now,
+            updated_at=now,
+        )
+        self.storage.upsert_ai_provider_config(config)
+        self._audit(user.user_id, "ai.config.upsert", "ai_provider_config", config.config_id, f"{config.provider}:{config.model}")
+        return self._config_view(config)
+
+    def ai_assist_case(self, request: AIAssistRequest, user: UserIdentity) -> AIAssistResponse:
+        config = self.storage.get_active_ai_provider_config(user.user_id)
+        if config is None:
+            raise PermissionError("No active AI provider configuration found for this user")
+        response = assist_with_model(config, request)
+        if request.case_id:
+            event_case = self.storage.get_event_case(request.case_id)
+            if event_case:
+                event_case.ai_summary = response.summary
+                event_case.ai_confidence = response.confidence
+                event_case.ai_provider = response.provider
+                event_case.ai_model = response.model
+                if response.structured_fields.get("corrective_action") and not event_case.corrective_action:
+                    event_case.corrective_action = str(response.structured_fields["corrective_action"])
+                if response.structured_fields.get("preventive_action") and not event_case.preventive_action:
+                    event_case.preventive_action = str(response.structured_fields["preventive_action"])
+                event_case.updated_at = datetime.now(timezone.utc)
+                self.storage.update_event_case(event_case)
+        self._audit(user.user_id, "ai.assist", "event_case", request.case_id or "ad_hoc", f"{response.provider}:{response.model}")
+        return response
 
     def import_facilities(self, request: RegistryImportRequest) -> list[Facility]:
         imported = []
@@ -246,6 +369,7 @@ class IndiaSurveillanceService:
     def get_trace(self, report_id: str) -> EventTrace:
         report = self._get_report(report_id)
         facility = next(item for item in self.storage.list_facilities() if item.facility_id == report.facility_id)
+        linked_case = next((item for item in self.storage.list_event_cases() if item.report_id == report.report_id), None)
         return EventTrace(
             report_id=report.report_id,
             facility=facility.name,
@@ -255,7 +379,7 @@ class IndiaSurveillanceService:
             deviation_class=report.deviation_class,
             severity=report.severity,
             validation_phase="controlled_pilot",
-            active_policy_version="National minimum dataset v1 / signal rules pilot set",
+            active_policy_version=linked_case.linked_policy_version if linked_case and linked_case.linked_policy_version else "National minimum dataset v1 / signal rules pilot set",
             trace_steps=[
                 TraceStep(step="input", finding=report.summary, output="Structured facility event record accepted."),
                 TraceStep(
@@ -267,6 +391,11 @@ class IndiaSurveillanceService:
                     step="triage",
                     finding=f"Severity classified as {report.severity}; status={report.status}",
                     output="Escalation and investigation rules selected.",
+                ),
+                TraceStep(
+                    step="case_linkage",
+                    finding=linked_case.case_id if linked_case else "No event-level case linked yet",
+                    output="Manual and machine streams harmonized for national learning.",
                 ),
                 TraceStep(
                     step="signal",
@@ -286,6 +415,7 @@ class IndiaSurveillanceService:
     def get_dashboard(self, user: UserIdentity) -> DashboardSnapshot:
         submissions = self.list_daily_submissions(user)
         reports = self._reports_for_user_scope(user)
+        cases = self.list_event_cases(user)
         alerts = []
         if any(item.escalation_required for item in submissions):
             alerts.append(
@@ -297,14 +427,14 @@ class IndiaSurveillanceService:
                     owner_role="Facility safety officer" if user.role.startswith("facility") else "State cell analyst",
                 )
             )
-        if any(item.severe_events > 0 for item in submissions):
+        if any(item.severity_level in {"severe", "sentinel"} for item in cases):
             alerts.append(
                 DashboardAlert(
-                    alert_id="ALERT-SEV-001",
-                    severity="moderate",
-                    title="Severe event recorded in daily submission",
-                    detail="Daily surveillance data contains at least one severe event requiring review.",
-                    owner_role="State cell analyst",
+                    alert_id="ALERT-CASE-001",
+                    severity="severe",
+                    title="High-risk event cases require CAPA review",
+                    detail="At least one severe or sentinel event case remains open in your scope.",
+                    owner_role="State cell analyst" if user.role != "facility_reporter" else "Facility safety officer",
                 )
             )
         trend = self.get_trend(user)
@@ -314,11 +444,15 @@ class IndiaSurveillanceService:
                 DashboardIndicator(label="Daily submissions", value=len(submissions), trend="stable"),
                 DashboardIndicator(label="Pending review", value=len([s for s in submissions if s.review_status == "submitted"]), trend="watch"),
                 DashboardIndicator(label="Open reports", value=len([r for r in reports if r.status != "closed"]), trend="watch"),
-                DashboardIndicator(label="Severe daily events", value=sum(s.severe_events for s in submissions), trend="up"),
+                DashboardIndicator(label="Open event cases", value=len([c for c in cases if c.closure_status != "closed"]), trend="watch"),
+                DashboardIndicator(label="Sentinel/severe cases", value=len([c for c in cases if c.severity_level in {"severe", "sentinel"}]), trend="up"),
+                DashboardIndicator(label="Learning actions due", value=len([c for c in cases if c.due_date and c.closure_status != "closed"]), trend="up"),
             ],
             alerts=alerts,
             submissions_pending_review=len([s for s in submissions if s.review_status == "submitted"]),
             reports_open=len([r for r in reports if r.status != "closed"]),
+            event_cases_open=len([c for c in cases if c.closure_status != "closed"]),
+            learning_actions_due=len([c for c in cases if c.due_date and c.closure_status != "closed"]),
             trend=trend,
         )
 
@@ -326,7 +460,8 @@ class IndiaSurveillanceService:
         facility_id = user.facility_id if user.role in {"facility_reporter", "facility_safety_officer"} else None
         state = user.state if user.role == "state_cell_analyst" else None
         points = self.storage.trend_points(facility_id=facility_id, state=state)
-        return TrendSeries(scope=user.role, points=points)
+        domain_breakdown = self.storage.domain_breakdown(facility_id=facility_id, state=state)
+        return TrendSeries(scope=user.role, points=points, domain_breakdown=domain_breakdown)
 
     def get_integration_profile(self) -> IntegrationProfile:
         return IntegrationProfile(
@@ -338,14 +473,16 @@ class IndiaSurveillanceService:
                 "Claims and payer review systems",
                 "PvPI and haemovigilance interfaces",
                 "IHIP-inspired surveillance operations layer",
+                "SentinelCare live clinical workflow intelligence layer",
             ],
-            input_modes=["web form", "CSV upload", "FHIR API", "HL7 feed", "manual state batch submission"],
+            input_modes=["web form", "CSV upload", "FHIR API", "HL7 feed", "manual state batch submission", "SentinelCare alert intake"],
             standards=["FHIR", "HL7 v2", "CSV templates", "canonical surveillance JSON schema"],
             privacy_controls=[
                 "role-based access control",
                 "de-identification above facility tier",
                 "audit trail",
                 "minimum necessary identifiers",
+                "encrypted user-supplied AI API keys",
             ],
         )
 
@@ -359,6 +496,15 @@ class IndiaSurveillanceService:
 
     def _identity(self, user: UserRecord) -> UserIdentity:
         return UserIdentity(**user.model_dump(exclude={"password_hash", "password_salt", "created_at", "created_by"}))
+
+    def _config_view(self, config: AIProviderConfigStored) -> AIProviderConfigView:
+        return AIProviderConfigView(**config.model_dump(exclude={"api_key_ciphertext"}))
+
+    def _department(self, department_id: str) -> Department:
+        department = next((item for item in self.storage.list_departments() if item.department_id == department_id), None)
+        if department is None:
+            raise KeyError(department_id)
+        return department
 
     def _get_report(self, report_id: str) -> EventReport:
         report = self.storage.get_report(report_id)
@@ -376,7 +522,7 @@ class IndiaSurveillanceService:
                 "reports_received": len(reports),
                 "open_investigations": len([item for item in reports if item.status != "closed"]),
                 "escalated_signals": len([item for item in self.storage.list_signals() if item.status == "escalated"]),
-                "sentinel_events": len([item for item in reports if item.severity == "sentinel"]),
+                "sentinel_events": len([item for item in self.storage.list_event_cases() if item.severity_level == "sentinel"]),
             }
         )
 
@@ -385,9 +531,12 @@ class IndiaSurveillanceService:
         if user.role in {"facility_reporter", "facility_safety_officer"}:
             return [item for item in reports if item.facility_id == user.facility_id]
         if user.role == "state_cell_analyst":
-            facility_ids = {item.facility_id for item in self.storage.list_facilities() if item.state == user.state}
+            facility_ids = self._facility_ids_for_state(user.state)
             return [item for item in reports if item.facility_id in facility_ids]
         return reports
+
+    def _facility_ids_for_state(self, state: str | None) -> set[str]:
+        return {item.facility_id for item in self.storage.list_facilities() if item.state == state}
 
     def _audit(self, actor_user_id: str | None, action: str, entity_type: str, entity_id: str, detail: str) -> None:
         self.storage.create_audit_log(
