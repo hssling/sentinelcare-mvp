@@ -7,9 +7,11 @@
 3. `manuscript_ijmr_special_article_surveillance.md`
 4. `manuscript_ijmr_special_article_surveillance_blinded.md`
 5. `submission_notes_ijmr.md`
-6. `figure_package_ijmr.md`
-7. `figures/figure1_federated_operating_model.svg`
-8. `figures/figure2_data_learning_flow.svg`
+6. `ijmr_word_format_pass.md`
+7. `figure_package_ijmr.md`
+8. `summary_table_ijmr.md`
+9. `figures/figure1_federated_operating_model.svg`
+10. `figures/figure2_data_learning_flow.svg`
 
 ## Generated docx assets
 
@@ -18,4 +20,6 @@
 3. `manuscript_ijmr_special_article_surveillance.docx`
 4. `manuscript_ijmr_special_article_surveillance_blinded.docx`
 5. `submission_notes_ijmr.docx`
-6. `figure_package_ijmr.docx`
+6. `ijmr_word_format_pass.docx`
+7. `figure_package_ijmr.docx`
+8. `summary_table_ijmr.docx`

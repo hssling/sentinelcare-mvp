@@ -119,6 +119,19 @@ Every signal should preserve traceability:
 
 ### 5. Governance and audit
 
+Table 1 summarizes the minimum design requirements that convert a reporting portal into a national surveillance and learning system rather than a passive incident repository.
+
+| Design layer | Minimum national requirement | Operational rationale |
+| --- | --- | --- |
+| Intake and reporting | Separate daily burden surveillance from event-level case reporting | Preserves routine monitoring while allowing deeper investigation |
+| Taxonomy and classification | Use a canonical safety taxonomy across facilities and states | Enables comparability, aggregation, and benchmarking |
+| Denominators and context | Capture patient-load and operational strain data | Supports interpretable rates and threshold setting |
+| Review workflow | Define facility, state, and national review responsibilities | Prevents unowned reports and weak closure loops |
+| Signal detection | Support threshold-based and pattern-based escalation | Improves early recognition of recurrent or severe risks |
+| Governance and audit | Preserve traceability, CAPA, and policy feedback | Converts reporting into visible learning and prevention |
+| Interoperability | Align with registries and API-based exchange | Reduces siloing and allows future digital integration |
+| AI assistance | Restrict AI to bounded assistive functions under human oversight | Improves structuring and prioritization without replacing accountability |
+
 The surveillance system should include durable audit trails, policy linkage, role-aware permissions, and documented closure logic. Governance is not an add-on; it is what distinguishes learning from passive reporting. Policy versions, escalations, and CAPA records should be queryable and reviewable.
 
 ## Digital integration requirements

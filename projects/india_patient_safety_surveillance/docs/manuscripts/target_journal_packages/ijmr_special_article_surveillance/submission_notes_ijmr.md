@@ -37,8 +37,19 @@ Special Article
 
 ## Follow-up work before actual submission
 
-1. produce blinded manuscript file without author identifiers
-2. convert references into final IJMR house style in Word
-3. prepare 1-2 clean framework figures
+1. confirm final blinded manuscript against journal upload fields
+2. apply final line-spacing, font, and margin settings in Word before upload
+3. cross-check references against the latest IJMR citation examples during the final editorial pass
 4. final word-count check against IJMR review/special article expectations
 
+## Package status
+
+The current package now includes:
+
+1. title page
+2. cover letter
+3. main manuscript
+4. blinded manuscript
+5. figure package
+6. summary table package
+7. submission bundle index

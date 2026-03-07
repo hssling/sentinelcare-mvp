@@ -67,6 +67,11 @@ Frontend:
 - systematic review/meta-analysis protocol
 - journal-targeted submission packages
 
+Current IJMR-targeted packages:
+
+- [Federated surveillance framework package](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/README.md)
+- [Reporting and learning systems review package](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_review_patient_safety_learning_systems/README.md)
+
 ## Code Locations
 
 - backend: [src/indiasurveillance](d:/Medical%20Error%20U-HEDPPLS/src/indiasurveillance)

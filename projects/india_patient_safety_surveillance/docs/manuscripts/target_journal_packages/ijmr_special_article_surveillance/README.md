@@ -21,6 +21,9 @@ The current project does not yet have multicentric empirical outcome data strong
 - [title_page_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/title_page_ijmr.md)
 - [cover_letter_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/cover_letter_ijmr.md)
 - [submission_notes_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/submission_notes_ijmr.md)
+- [ijmr_word_format_pass.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/ijmr_word_format_pass.md)
+- [summary_table_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/summary_table_ijmr.md)
+- [submission_bundle_index_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/submission_bundle_index_ijmr.md)
 
 ## IJMR guidance verified
 
@@ -37,3 +40,13 @@ Key fit points from the official instructions:
 - Review-style manuscripts may be up to about `4000` words excluding abstract and references
 - Review-style manuscripts require a clear methodology enumerating the search strategy and an unstructured abstract of about `250` words
 
+## Package completion status
+
+The package now includes:
+
+1. author-identifiable manuscript assets
+2. blinded manuscript assets
+3. figure package
+4. summary table package
+5. Word-format and upload notes
+6. DOCX files for direct editorial finishing
