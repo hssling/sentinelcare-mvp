@@ -104,6 +104,10 @@ type IntegrationProfile = { target_systems: string[]; input_modes: string[]; sta
 const configuredApiBase = (import.meta as ImportMeta & { env: { VITE_INDIA_SURVEILLANCE_API_BASE?: string } }).env.VITE_INDIA_SURVEILLANCE_API_BASE;
 const apiBase = window.location.protocol === 'https:' ? '/api' : (configuredApiBase || 'http://127.0.0.1:8010');
 const sessionStorageKey = 'india-surveillance-session';
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+};
 
 async function api<T>(path: string, token?: string, options?: RequestInit): Promise<T> {
   const headers: HeadersInit = { 'Content-Type': 'application/json', ...(options?.headers || {}) };
@@ -152,6 +156,7 @@ function App() {
   const [traceError, setTraceError] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<string | null>(null);
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [form, setForm] = useState({
     department_id: '',
     patient_days: 100,
@@ -245,6 +250,18 @@ function App() {
   };
 
   useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      void navigator.serviceWorker.register('/sw.js');
+    }
+    const handler = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as InstallPromptEvent);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  useEffect(() => {
     if (session) {
       window.localStorage.setItem(sessionStorageKey, JSON.stringify(session));
       void loadData(session.access_token);
@@ -329,6 +346,13 @@ function App() {
     await loadTrace(session.access_token, reportId);
   };
 
+  const triggerInstall = async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    await installPrompt.userChoice;
+    setInstallPrompt(null);
+  };
+
   if (!session) {
     return (
       <div className="login-shell">
@@ -364,6 +388,7 @@ function App() {
           <strong>{session.user.facility_id || session.user.state || 'National scope'}</strong>
           <p>{lastSync ? `Last sync ${lastSync}` : apiBase}</p>
           <div className="action-row">
+            {installPrompt && <button onClick={() => void triggerInstall()}>Install app</button>}
             <button onClick={() => void loadData(session.access_token)}>Refresh</button>
             <button onClick={() => setSession(null)}>Logout</button>
           </div>
