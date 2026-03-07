@@ -1,0 +1,39 @@
+name: Deploy India Surveillance Netlify
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/india-surveillance/**'
+      - '.github/workflows/deploy-india-surveillance-netlify.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: frontend/india-surveillance
+        run: npm ci
+      - name: Build
+        working-directory: frontend/india-surveillance
+        env:
+          VITE_INDIA_SURVEILLANCE_API_BASE: ${{ secrets.VITE_INDIA_SURVEILLANCE_API_BASE }}
+        run: npm run build
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: frontend/india-surveillance/dist
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: 'Deploy India surveillance frontend'
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+          overwrites-pull-request-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_INDIA_SURVEILLANCE_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_INDIA_SURVEILLANCE_SITE_ID }}

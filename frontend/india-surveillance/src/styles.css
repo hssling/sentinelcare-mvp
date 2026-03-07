@@ -83,6 +83,12 @@ h1 {
 .status-dot { width: 10px; height: 10px; display: inline-block; border-radius: 50%; background: var(--good); margin-right: 8px; }
 .subsection { margin-bottom: 18px; }
 .policy-row { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.selector-label { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; color: var(--muted); font-size: 14px; }
+select, button { font: inherit; }
+select { border-radius: 12px; border: 1px solid var(--line); padding: 10px 12px; background: #fff; }
+.action-row { display: flex; gap: 8px; margin-top: 10px; }
+.action-row button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 12px; cursor: pointer; }
+.action-row button:hover { background: var(--accent-soft); }
 
 @media (max-width: 1100px) {
   .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }

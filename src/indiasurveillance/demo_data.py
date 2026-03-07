@@ -2,11 +2,19 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
-from .contracts import EventReport, Facility, PolicyRecord, SafetySignal, SurveillanceSnapshot
+from .contracts import (
+    EventReport,
+    Facility,
+    PilotStateCell,
+    PolicyRecord,
+    SafetySignal,
+    SurveillanceSnapshot,
+    UserIdentity,
+)
 
 
 def build_demo_snapshot() -> SurveillanceSnapshot:
-    now = datetime(2026, 3, 7, 18, 0, 0)
+    now = datetime(2026, 3, 8, 9, 0, 0)
     facilities = [
         Facility(
             facility_id="FAC-TMK-001",
@@ -16,6 +24,7 @@ def build_demo_snapshot() -> SurveillanceSnapshot:
             ownership="teaching",
             level="medical_college",
             abdm_registry_ready=True,
+            registry_source="abdm_seed",
         ),
         Facility(
             facility_id="FAC-DLH-014",
@@ -25,6 +34,7 @@ def build_demo_snapshot() -> SurveillanceSnapshot:
             ownership="public",
             level="district_hospital",
             abdm_registry_ready=True,
+            registry_source="state_registry",
         ),
         Facility(
             facility_id="FAC-KOL-022",
@@ -34,6 +44,7 @@ def build_demo_snapshot() -> SurveillanceSnapshot:
             ownership="private",
             level="private_hospital",
             abdm_registry_ready=False,
+            registry_source="manual",
         ),
     ]
     reports = [
@@ -50,6 +61,8 @@ def build_demo_snapshot() -> SurveillanceSnapshot:
             summary="Beta-lactam order placed despite allergy documentation mismatch.",
             immediate_action="Order held and pharmacist alerted.",
             status="investigating",
+            assigned_to="State clinical pharmacist reviewer",
+            state_cell="Karnataka state cell",
         ),
         EventReport(
             report_id="EVT-IND-1002",
@@ -64,6 +77,8 @@ def build_demo_snapshot() -> SurveillanceSnapshot:
             summary="Delayed escalation after repeated abnormal vitals and lactate trigger.",
             immediate_action="Rapid response review initiated.",
             status="triaged",
+            assigned_to="Rajasthan state patient safety cell",
+            state_cell="Rajasthan state cell",
         ),
         EventReport(
             report_id="EVT-IND-1003",
@@ -146,3 +161,59 @@ def build_demo_snapshot() -> SurveillanceSnapshot:
         signals=signals,
         policies=policies,
     )
+
+
+def build_demo_users() -> list[UserIdentity]:
+    return [
+        UserIdentity(
+            user_id="demo-fso-ka",
+            name="Karnataka Facility Safety Officer",
+            role="facility_safety_officer",
+            state="Karnataka",
+            district="Tumkur",
+            facility_id="FAC-TMK-001",
+        ),
+        UserIdentity(
+            user_id="demo-state-ka",
+            name="Karnataka State Cell Analyst",
+            role="state_cell_analyst",
+            state="Karnataka",
+        ),
+        UserIdentity(
+            user_id="demo-state-rj",
+            name="Rajasthan State Cell Analyst",
+            role="state_cell_analyst",
+            state="Rajasthan",
+        ),
+        UserIdentity(
+            user_id="demo-national",
+            name="National Surveillance Analyst",
+            role="national_analyst",
+        ),
+        UserIdentity(
+            user_id="demo-admin",
+            name="Governance Administrator",
+            role="governance_admin",
+        ),
+    ]
+
+
+def build_demo_state_cells() -> list[PilotStateCell]:
+    return [
+        PilotStateCell(
+            state_cell_id="STATE-KA",
+            state="Karnataka",
+            nodal_unit="State patient safety intelligence cell",
+            lead_name="State Quality and Safety Lead",
+            status="pilot",
+            facilities_mapped=12,
+        ),
+        PilotStateCell(
+            state_cell_id="STATE-RJ",
+            state="Rajasthan",
+            nodal_unit="State patient safety intelligence cell",
+            lead_name="State Epidemiology and Quality Lead",
+            status="pilot",
+            facilities_mapped=9,
+        ),
+    ]

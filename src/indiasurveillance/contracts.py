@@ -39,6 +39,7 @@ class Facility(BaseModel):
     ownership: Literal["public", "private", "teaching", "trust"]
     level: Literal["medical_college", "district_hospital", "sub_district", "community", "private_hospital"]
     abdm_registry_ready: bool = False
+    registry_source: str = "manual"
 
 
 class EventReport(BaseModel):
@@ -54,6 +55,9 @@ class EventReport(BaseModel):
     summary: str
     immediate_action: str
     status: Literal["reported", "triaged", "investigating", "closed"]
+    assigned_to: str | None = None
+    state_cell: str | None = None
+    closure_note: str | None = None
 
 
 class SafetySignal(BaseModel):
@@ -79,6 +83,57 @@ class PolicyRecord(BaseModel):
     approver: str
     activation_scope: str
     last_updated: date
+
+
+class UserIdentity(BaseModel):
+    user_id: str
+    name: str
+    role: Literal[
+        "facility_reporter",
+        "facility_safety_officer",
+        "district_reviewer",
+        "state_cell_analyst",
+        "national_analyst",
+        "governance_admin",
+    ]
+    state: str | None = None
+    district: str | None = None
+    facility_id: str | None = None
+
+
+class FacilityImportRecord(BaseModel):
+    facility_id: str
+    name: str
+    state: str
+    district: str
+    ownership: Literal["public", "private", "teaching", "trust"]
+    level: Literal["medical_college", "district_hospital", "sub_district", "community", "private_hospital"]
+    abdm_registry_ready: bool = False
+    registry_source: str = "csv_import"
+
+
+class PilotStateCell(BaseModel):
+    state_cell_id: str
+    state: str
+    nodal_unit: str
+    lead_name: str
+    status: Literal["design", "pilot", "active"]
+    facilities_mapped: int
+
+
+class TriageRequest(BaseModel):
+    status: Literal["triaged", "investigating"]
+    assigned_to: str
+    state_cell: str
+
+
+class ClosureRequest(BaseModel):
+    closure_note: str
+
+
+class RegistryImportRequest(BaseModel):
+    imported_by: str
+    facilities: list[FacilityImportRecord]
 
 
 class TraceStep(BaseModel):

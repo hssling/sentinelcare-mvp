@@ -1,0 +1,45 @@
+name: India Surveillance CI
+
+on:
+  push:
+    paths:
+      - 'src/indiasurveillance/**'
+      - 'tests/india_surveillance/**'
+      - 'frontend/india-surveillance/**'
+      - 'projects/india_patient_safety_surveillance/**'
+      - '.github/workflows/india-surveillance-ci.yml'
+      - 'pyproject.toml'
+  pull_request:
+    paths:
+      - 'src/indiasurveillance/**'
+      - 'tests/india_surveillance/**'
+      - 'frontend/india-surveillance/**'
+      - 'projects/india_patient_safety_surveillance/**'
+      - '.github/workflows/india-surveillance-ci.yml'
+      - 'pyproject.toml'
+
+jobs:
+  backend-and-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[dev]
+      - name: Run backend tests
+        run: pytest tests/india_surveillance -q
+      - name: Install frontend
+        working-directory: frontend/india-surveillance
+        run: npm ci
+      - name: Build frontend
+        working-directory: frontend/india-surveillance
+        env:
+          VITE_INDIA_SURVEILLANCE_API_BASE: http://127.0.0.1:8010
+        run: npm run build

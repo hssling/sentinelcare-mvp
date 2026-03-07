@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from .auth import demo_user_header, resolve_user
+from .contracts import ClosureRequest, RegistryImportRequest, TriageRequest
 from .service import IndiaSurveillanceService
 
 service = IndiaSurveillanceService()
@@ -45,6 +47,16 @@ def policies():
     return service.get_snapshot().policies
 
 
+@app.get("/users")
+def users():
+    return service.list_users()
+
+
+@app.get("/state-cells")
+def state_cells():
+    return service.list_state_cells()
+
+
 @app.get("/snapshot")
 def snapshot():
     return service.get_snapshot()
@@ -61,6 +73,47 @@ def trace(report_id: str):
 @app.get("/integration-profile")
 def integration_profile():
     return service.get_integration_profile()
+
+
+@app.post("/registry/import")
+def registry_import(
+    request: RegistryImportRequest,
+    x_demo_user: str | None = Depends(demo_user_header),
+):
+    user = resolve_user(service, x_demo_user)
+    if user.role not in {"state_cell_analyst", "national_analyst", "governance_admin"}:
+        raise HTTPException(status_code=403, detail="User is not allowed to import facilities")
+    return service.import_facilities(request)
+
+
+@app.post("/reports/{report_id}/triage")
+def triage_report(
+    report_id: str,
+    request: TriageRequest,
+    x_demo_user: str | None = Depends(demo_user_header),
+):
+    user = resolve_user(service, x_demo_user)
+    try:
+        return service.triage_report(report_id, request, user)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown report_id: {report_id}") from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@app.post("/reports/{report_id}/close")
+def close_report(
+    report_id: str,
+    request: ClosureRequest,
+    x_demo_user: str | None = Depends(demo_user_header),
+):
+    user = resolve_user(service, x_demo_user)
+    try:
+        return service.close_report(report_id, request, user)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown report_id: {report_id}") from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @app.get("/sources")
