@@ -1,45 +1,72 @@
 :root {
-  --bg: #f3f5f7;
-  --ink: #1a2d35;
+  --bg: #eef3f5;
+  --ink: #172a30;
   --card: #ffffff;
-  --line: #d8e0e6;
+  --line: #ccd7de;
   --brand: #0d6e6e;
-  --error: #9f2d2d;
+  --brand-dark: #085959;
+  --warn: #8c4a0f;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
   color: var(--ink);
-  background: radial-gradient(circle at 10% 10%, #cde7e4, var(--bg) 35%);
+  background:
+    radial-gradient(circle at 12% 10%, #c6e3de 0%, transparent 35%),
+    linear-gradient(180deg, #f9fbfc 0%, var(--bg) 80%);
 }
 
 .page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1rem 4rem;
+  padding: 1.25rem 1rem 3rem;
 }
 
 .hero h1 {
   margin: 0;
   font-size: 2rem;
-  color: var(--brand);
+  color: var(--brand-dark);
 }
 
-.hero p {
-  margin: 0.5rem 0 1.5rem;
+.hero p { margin: 0.4rem 0 1rem; }
+
+.banner {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f8fbfb;
+}
+
+.error-inline { color: var(--warn); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 1rem;
+  border-radius: 12px;
+  padding: 0.9rem;
   overflow-x: auto;
+}
+
+.card h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  color: var(--brand-dark);
+}
+
+.card p {
+  margin: 0 0 0.65rem;
+  font-size: 0.92rem;
 }
 
 table {
@@ -47,15 +74,48 @@ table {
   border-collapse: collapse;
 }
 
-th,
-td {
+th, td {
   text-align: left;
   border-bottom: 1px solid var(--line);
-  padding: 0.65rem 0.4rem;
-  font-size: 0.92rem;
+  padding: 0.5rem 0.35rem;
+  font-size: 0.86rem;
 }
 
-.error {
-  color: var(--error);
+.agent-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
 }
 
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.stat {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem;
+  background: #fcfefe;
+}
+
+.stat span {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.stat strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.1rem;
+  color: var(--brand-dark);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

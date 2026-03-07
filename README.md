@@ -23,6 +23,13 @@ See:
 - Automation: GitHub Actions CI/CD
 - Container: Docker image for API (GHCR)
 
+## What These Agents Are
+
+- They are orchestrated software roles (A-H) that execute designated pipeline tasks.
+- They are not autonomous clinical decision-makers.
+- They are not all separately "trained models". Current MVP uses deterministic safety logic and orchestrated workflow stages.
+- ML model integration is planned for temporal risk and advanced prediction modules.
+
 ## End-to-end flow
 
 1. Event arrives (API or synthetic runner).
