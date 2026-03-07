@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300">
+  <style>.b{fill:#f5f8fa;stroke:#1f3a4d;stroke-width:2}.t{font:700 24px Arial}.s{font:16px Arial}.a{stroke:#1f3a4d;stroke-width:3;marker-end:url(#m)}</style>
+  <defs><marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#1f3a4d"/></marker></defs>
+  <rect class="b" x="40" y="70" width="310" height="110" rx="12"/><text class="t" x="195" y="115" text-anchor="middle">1. Retrospective Validation</text><text class="s" x="195" y="145" text-anchor="middle">rule fidelity, cohort definitions, PPV</text>
+  <rect class="b" x="445" y="70" width="310" height="110" rx="12"/><text class="t" x="600" y="115" text-anchor="middle">2. Silent Prospective Mode</text><text class="s" x="600" y="145" text-anchor="middle">alert burden, lag, missed events</text>
+  <rect class="b" x="850" y="70" width="310" height="110" rx="12"/><text class="t" x="1005" y="115" text-anchor="middle">3. Controlled Intervention</text><text class="s" x="1005" y="145" text-anchor="middle">time to action, escalation, outcomes</text>
+  <line class="a" x1="350" y1="125" x2="445" y2="125"/><line class="a" x1="755" y1="125" x2="850" y2="125"/>
+  <text class="s" x="600" y="240" text-anchor="middle">Core metrics: PPV, event capture, time to detection, time to acknowledgement, time to corrective action, override rate, queue overdue burden</text>
+</svg>
