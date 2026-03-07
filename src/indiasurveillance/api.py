@@ -1,24 +1,33 @@
 from __future__ import annotations
 
-from fastapi import Depends, FastAPI, HTTPException
+import os
+
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from .auth import demo_user_header, resolve_user, session_header
+from .auth import session_header
 from .contracts import (
     ClosureRequest,
     DailySubmissionCreate,
     LoginRequest,
+    NotificationAcknowledgeRequest,
     RegistryImportRequest,
     SubmissionReviewRequest,
     TriageRequest,
+    UserCreateRequest,
 )
 from .service import IndiaSurveillanceService
 
 service = IndiaSurveillanceService()
-app = FastAPI(title="India Patient Safety Surveillance System", version="0.2.0")
+app = FastAPI(title="India Patient Safety Surveillance System", version="0.3.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://mederror-india-surveillance.netlify.app",
+        os.getenv("INDIA_SURVEILLANCE_ALLOWED_ORIGIN", ""),
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -61,14 +70,12 @@ def facilities():
 
 @app.get("/departments")
 def departments(facility_id: str | None = None, user=Depends(session_user)):
-    if user.role in {"facility_reporter", "facility_safety_officer"}:
-        facility_id = user.facility_id
-    return service.list_departments(facility_id)
+    return service.list_departments(user, facility_id)
 
 
 @app.get("/reports")
-def reports():
-    return service.get_snapshot().reports
+def reports(user=Depends(session_user)):
+    return service.list_reports(user)
 
 
 @app.get("/daily-submissions")
@@ -101,6 +108,11 @@ def dashboard(user=Depends(session_user)):
     return service.get_dashboard(user)
 
 
+@app.get("/trends")
+def trends(user=Depends(session_user)):
+    return service.get_trend(user)
+
+
 @app.get("/signals")
 def signals():
     return service.get_snapshot().signals
@@ -112,8 +124,18 @@ def policies():
 
 
 @app.get("/users")
-def users():
-    return service.list_users()
+def users(user=Depends(session_user)):
+    return service.list_users(user)
+
+
+@app.post("/users")
+def create_user(request: UserCreateRequest, user=Depends(session_user)):
+    try:
+        return service.create_user(request, user)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @app.get("/state-cells")
@@ -134,29 +156,41 @@ def trace(report_id: str):
         raise HTTPException(status_code=404, detail=f"Unknown report_id: {report_id}") from exc
 
 
+@app.get("/notifications")
+def notifications(user=Depends(session_user)):
+    return service.list_notifications(user)
+
+
+@app.post("/notifications/{notification_id}/acknowledge")
+def acknowledge_notification(notification_id: str, request: NotificationAcknowledgeRequest, user=Depends(session_user)):
+    try:
+        return service.acknowledge_notification(notification_id, request, user)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown notification_id: {exc.args[0]}") from exc
+
+
+@app.get("/audit-logs")
+def audit_logs(limit: int = Query(default=50, ge=1, le=200), user=Depends(session_user)):
+    try:
+        return service.list_audit_logs(user, limit)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
 @app.get("/integration-profile")
 def integration_profile():
     return service.get_integration_profile()
 
 
 @app.post("/registry/import")
-def registry_import(
-    request: RegistryImportRequest,
-    x_demo_user: str | None = Depends(demo_user_header),
-):
-    user = resolve_user(service, x_demo_user)
+def registry_import(request: RegistryImportRequest, user=Depends(session_user)):
     if user.role not in {"state_cell_analyst", "national_analyst", "governance_admin"}:
         raise HTTPException(status_code=403, detail="User is not allowed to import facilities")
     return service.import_facilities(request)
 
 
 @app.post("/reports/{report_id}/triage")
-def triage_report(
-    report_id: str,
-    request: TriageRequest,
-    x_demo_user: str | None = Depends(demo_user_header),
-):
-    user = resolve_user(service, x_demo_user)
+def triage_report(report_id: str, request: TriageRequest, user=Depends(session_user)):
     try:
         return service.triage_report(report_id, request, user)
     except KeyError as exc:
@@ -166,12 +200,7 @@ def triage_report(
 
 
 @app.post("/reports/{report_id}/close")
-def close_report(
-    report_id: str,
-    request: ClosureRequest,
-    x_demo_user: str | None = Depends(demo_user_header),
-):
-    user = resolve_user(service, x_demo_user)
+def close_report(report_id: str, request: ClosureRequest, user=Depends(session_user)):
     try:
         return service.close_report(report_id, request, user)
     except KeyError as exc:

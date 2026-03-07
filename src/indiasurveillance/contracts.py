@@ -29,6 +29,14 @@ DeviationClass = Literal[
 Severity = Literal["near_miss", "no_harm", "low", "moderate", "severe", "sentinel"]
 ValidationPhase = Literal["design", "retrospective", "silent_mode", "controlled_pilot", "scale_up"]
 PolicyState = Literal["draft", "under_review", "approved_pilot", "approved_production", "superseded", "retired"]
+RoleName = Literal[
+    "facility_reporter",
+    "facility_safety_officer",
+    "district_reviewer",
+    "state_cell_analyst",
+    "national_analyst",
+    "governance_admin",
+]
 
 
 class Facility(BaseModel):
@@ -40,6 +48,14 @@ class Facility(BaseModel):
     level: Literal["medical_college", "district_hospital", "sub_district", "community", "private_hospital"]
     abdm_registry_ready: bool = False
     registry_source: str = "manual"
+
+
+class Department(BaseModel):
+    department_id: str
+    facility_id: str
+    name: str
+    category: Literal["clinical", "support", "quality", "administrative"]
+    reporting_enabled: bool = True
 
 
 class EventReport(BaseModel):
@@ -88,19 +104,20 @@ class PolicyRecord(BaseModel):
 class UserIdentity(BaseModel):
     user_id: str
     name: str
-    role: Literal[
-        "facility_reporter",
-        "facility_safety_officer",
-        "district_reviewer",
-        "state_cell_analyst",
-        "national_analyst",
-        "governance_admin",
-    ]
+    role: RoleName
     state: str | None = None
     district: str | None = None
     facility_id: str | None = None
     department_id: str | None = None
     username: str | None = None
+    is_active: bool = True
+
+
+class UserRecord(UserIdentity):
+    password_hash: str
+    password_salt: str
+    created_at: datetime
+    created_by: str | None = None
 
 
 class LoginRequest(BaseModel):
@@ -110,16 +127,9 @@ class LoginRequest(BaseModel):
 
 class SessionToken(BaseModel):
     access_token: str
-    token_type: str = "demo-bearer"
+    token_type: str = "bearer"
+    expires_at: datetime
     user: UserIdentity
-
-
-class Department(BaseModel):
-    department_id: str
-    facility_id: str
-    name: str
-    category: Literal["clinical", "support", "quality", "administrative"]
-    reporting_enabled: bool = True
 
 
 class DailySurveillanceSubmission(BaseModel):
@@ -141,6 +151,8 @@ class DailySurveillanceSubmission(BaseModel):
     notes: str = ""
     reviewed_by: str | None = None
     review_status: Literal["submitted", "reviewed", "actioned"] = "submitted"
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class DailySubmissionCreate(BaseModel):
@@ -165,6 +177,59 @@ class SubmissionReviewRequest(BaseModel):
     notes: str = ""
 
 
+class UserCreateRequest(BaseModel):
+    name: str
+    username: str
+    password: str
+    role: RoleName
+    state: str | None = None
+    district: str | None = None
+    facility_id: str | None = None
+    department_id: str | None = None
+
+
+class NotificationRecord(BaseModel):
+    notification_id: str
+    created_at: datetime
+    user_id: str | None = None
+    scope: Literal["facility", "state", "national"]
+    title: str
+    message: str
+    severity: Severity
+    status: Literal["open", "acknowledged", "closed"] = "open"
+    facility_id: str | None = None
+    state: str | None = None
+    entity_type: str | None = None
+    entity_id: str | None = None
+
+
+class NotificationAcknowledgeRequest(BaseModel):
+    status: Literal["acknowledged", "closed"]
+
+
+class AuditLogRecord(BaseModel):
+    audit_id: str
+    created_at: datetime
+    actor_user_id: str | None = None
+    action: str
+    entity_type: str
+    entity_id: str
+    detail: str
+
+
+class TrendPoint(BaseModel):
+    date: date
+    patient_days: int
+    near_misses: int
+    harm_events: int
+    severe_events: int
+
+
+class TrendSeries(BaseModel):
+    scope: str
+    points: list[TrendPoint]
+
+
 class DashboardIndicator(BaseModel):
     label: str
     value: int
@@ -185,6 +250,7 @@ class DashboardSnapshot(BaseModel):
     alerts: list[DashboardAlert]
     submissions_pending_review: int
     reports_open: int
+    trend: TrendSeries | None = None
 
 
 class FacilityImportRecord(BaseModel):

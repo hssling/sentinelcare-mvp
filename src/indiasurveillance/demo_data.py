@@ -259,6 +259,7 @@ def build_demo_departments() -> list[Department]:
 
 def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
     today = date(2026, 3, 8)
+    now = datetime(2026, 3, 8, 9, 0, 0)
     return [
         DailySurveillanceSubmission(
             submission_id="SUB-TMK-001",
@@ -277,6 +278,8 @@ def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
             diagnostic_events=1,
             escalation_required=False,
             notes="High near-miss load during evening shift handover.",
+            created_at=now,
+            updated_at=now,
         ),
         DailySurveillanceSubmission(
             submission_id="SUB-TMK-002",
@@ -295,5 +298,7 @@ def build_demo_daily_submissions() -> list[DailySurveillanceSubmission]:
             diagnostic_events=0,
             escalation_required=True,
             notes="One deterioration escalation breach triggered review.",
+            created_at=now,
+            updated_at=now,
         ),
     ]

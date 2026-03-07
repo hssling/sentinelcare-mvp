@@ -1,0 +1,42 @@
+name: Deploy India Surveillance API VM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/indiasurveillance/**'
+      - 'pyproject.toml'
+      - '.github/workflows/deploy-india-surveillance-api-vm.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          SUPABASE_INDIA_URL: ${{ secrets.SUPABASE_INDIA_URL }}
+          SUPABASE_INDIA_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_INDIA_SERVICE_ROLE_KEY }}
+          INDIA_SURVEILLANCE_JWT_SECRET: ${{ secrets.INDIA_SURVEILLANCE_JWT_SECRET }}
+        with:
+          host: ${{ secrets.INDIA_VM_HOST }}
+          username: ${{ secrets.INDIA_VM_USER }}
+          key: ${{ secrets.INDIA_VM_SSH_KEY }}
+          passphrase: ${{ secrets.INDIA_VM_SSH_PASSPHRASE }}
+          envs: SUPABASE_INDIA_URL,SUPABASE_INDIA_SERVICE_ROLE_KEY,INDIA_SURVEILLANCE_JWT_SECRET
+          script: |
+            set -e
+            cd ~/sentinelcare-mvp
+            git pull origin main
+            python3.11 -m venv .venv-india
+            source .venv-india/bin/activate
+            pip install --upgrade pip
+            pip install .
+            cat > .env.india <<EOF
+            SUPABASE_INDIA_URL=${SUPABASE_INDIA_URL}
+            SUPABASE_INDIA_SERVICE_ROLE_KEY=${SUPABASE_INDIA_SERVICE_ROLE_KEY}
+            INDIA_SURVEILLANCE_JWT_SECRET=${INDIA_SURVEILLANCE_JWT_SECRET}
+            EOF
+            pkill -f "uvicorn indiasurveillance.api:app" || true
+            nohup bash -lc 'set -a; source ~/sentinelcare-mvp/.env.india; set +a; ~/sentinelcare-mvp/.venv-india/bin/python -m uvicorn indiasurveillance.api:app --host 0.0.0.0 --port 8010' >/tmp/india-surveillance.log 2>&1 &

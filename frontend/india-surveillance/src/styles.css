@@ -53,6 +53,14 @@ body {
 }
 
 .error-text { color: var(--bad); }
+.error-banner {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(157, 45, 45, 0.24);
+  background: rgba(157, 45, 45, 0.08);
+  color: var(--bad);
+}
 .compact-hero { align-items: center; }
 
 .page-shell {
@@ -140,6 +148,30 @@ textarea { min-height: 92px; resize: vertical; }
 }
 .checkbox-row input { width: auto; }
 .alert-stack { display: grid; gap: 10px; margin-top: 12px; }
+.trend-shell { display: grid; gap: 10px; }
+.trend-chart {
+  width: 100%;
+  height: 180px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(244,201,174,0.3));
+  border: 1px solid var(--line);
+}
+.line {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.line.near { stroke: var(--good); }
+.line.harm { stroke: var(--warn); }
+.line.severe { stroke: var(--bad); }
+.user-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  max-height: 220px;
+  overflow: auto;
+}
 
 @media (max-width: 1100px) {
   .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }

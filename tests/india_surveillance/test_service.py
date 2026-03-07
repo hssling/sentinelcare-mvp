@@ -5,9 +5,11 @@ from indiasurveillance.contracts import (
     DailySubmissionCreate,
     FacilityImportRecord,
     LoginRequest,
+    NotificationAcknowledgeRequest,
     RegistryImportRequest,
     SubmissionReviewRequest,
     TriageRequest,
+    UserCreateRequest,
 )
 from indiasurveillance.service import IndiaSurveillanceService
 
@@ -68,9 +70,10 @@ def test_triage_and_close_workflow_updates_report():
     assert closed.closure_note is not None
 
 
-def test_login_submission_review_and_dashboard_flow():
+def test_login_submission_review_dashboard_notification_and_audit_flow():
     service = IndiaSurveillanceService()
     session = service.login(LoginRequest(username="tmk-ed", password="pass123"))
+    assert session.token_type == "bearer"
     user = service.resolve_session(session.access_token)
     submission = service.create_daily_submission(
         DailySubmissionCreate(
@@ -80,11 +83,12 @@ def test_login_submission_review_and_dashboard_flow():
             near_misses=3,
             no_harm_events=1,
             harm_events=1,
-            severe_events=0,
+            severe_events=1,
             medication_events=1,
             procedure_events=0,
             infection_events=0,
             diagnostic_events=1,
+            escalation_required=True,
             notes="Routine daily feed.",
         ),
         user,
@@ -102,3 +106,38 @@ def test_login_submission_review_and_dashboard_flow():
     dashboard = service.get_dashboard(manager)
     assert dashboard.submissions_pending_review >= 0
     assert len(dashboard.indicators) >= 3
+    assert dashboard.trend is not None
+
+    notifications = service.list_notifications(manager)
+    assert len(notifications) >= 1
+    updated = service.acknowledge_notification(
+        notifications[0].notification_id,
+        NotificationAcknowledgeRequest(status="acknowledged"),
+        manager,
+    )
+    assert updated.status == "acknowledged"
+
+    audits = service.list_audit_logs(service.get_user("demo-national"))
+    assert any(item.action == "submission.create" for item in audits)
+
+
+def test_admin_can_create_user_and_login():
+    service = IndiaSurveillanceService()
+    admin = service.get_user("demo-admin")
+    created = service.create_user(
+        UserCreateRequest(
+            name="New ED Reporter",
+            username="new-ed",
+            password="pass123",
+            role="facility_reporter",
+            facility_id="FAC-TMK-001",
+            department_id="DEPT-TMK-ED",
+            state="Karnataka",
+            district="Tumkur",
+        ),
+        admin,
+    )
+    assert created.username == "new-ed"
+
+    session = service.login(LoginRequest(username="new-ed", password="pass123"))
+    assert session.user.user_id == created.user_id

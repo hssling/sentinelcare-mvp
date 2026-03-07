@@ -63,4 +63,6 @@ This repository contains the end-to-end foundational package:
 2. national/state/facility SOPs,
 3. policy and advocacy material,
 4. manuscript series and review/protocol package,
-5. a functional backend/frontend scaffold with explainable demo surveillance workflows.
+5. a functional backend/frontend scaffold with explainable surveillance workflows,
+6. Supabase-backed persistence for users, facilities, departments, submissions, notifications, and audit logs,
+7. JWT login, password hashing, admin user creation, trend analytics, and deploy automation workflows.

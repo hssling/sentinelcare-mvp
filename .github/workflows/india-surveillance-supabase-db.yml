@@ -1,0 +1,24 @@
+name: India Surveillance Supabase DB
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/india_patient_safety_surveillance/supabase/**'
+      - 'scripts/execute_supabase_sql.py'
+      - '.github/workflows/india-surveillance-supabase-db.yml'
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Apply India surveillance schema
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_INDIA_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_INDIA_PROJECT_REF }}
+        run: python scripts/execute_supabase_sql.py projects/india_patient_safety_surveillance/supabase/migrations/001_init.sql
