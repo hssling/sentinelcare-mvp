@@ -27,8 +27,14 @@ jobs:
           envs: SUPABASE_INDIA_URL,SUPABASE_INDIA_SERVICE_ROLE_KEY,INDIA_SURVEILLANCE_JWT_SECRET
           script: |
             set -e
-            cd ~/sentinelcare-mvp
-            git pull origin main
+            mkdir -p ~/apps
+            cd ~/apps
+            if [ ! -d sentinelcare-mvp/.git ]; then
+              git clone https://github.com/hssling/sentinelcare-mvp.git
+            fi
+            cd ~/apps/sentinelcare-mvp
+            git checkout main
+            git pull --ff-only origin main
             python3.11 -m venv .venv-india
             source .venv-india/bin/activate
             pip install --upgrade pip
@@ -39,4 +45,4 @@ jobs:
             INDIA_SURVEILLANCE_JWT_SECRET=${INDIA_SURVEILLANCE_JWT_SECRET}
             EOF
             pkill -f "uvicorn indiasurveillance.api:app" || true
-            nohup bash -lc 'set -a; source ~/sentinelcare-mvp/.env.india; set +a; ~/sentinelcare-mvp/.venv-india/bin/python -m uvicorn indiasurveillance.api:app --host 0.0.0.0 --port 8010' >/tmp/india-surveillance.log 2>&1 &
+            nohup bash -lc 'set -a; source ~/apps/sentinelcare-mvp/.env.india; set +a; ~/apps/sentinelcare-mvp/.venv-india/bin/python -m uvicorn indiasurveillance.api:app --host 0.0.0.0 --port 8010' >/tmp/india-surveillance.log 2>&1 &
