@@ -319,6 +319,8 @@ li {
   padding: 14px;
   margin: 0;
   transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .report-card.selectable:hover,
@@ -341,6 +343,30 @@ li {
   gap: 10px;
   margin-bottom: 8px;
   align-items: center;
+  min-width: 0;
+}
+
+.report-header span:first-child,
+.report-card strong,
+.report-card p,
+.report-card small,
+.trace-step p,
+.trace-step small,
+.policy-row strong,
+.policy-row small {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.report-card strong,
+.report-card p,
+.report-card small {
+  display: block;
+}
+
+.report-card p,
+.trace-step p {
+  margin: 8px 0;
 }
 
 .pill,
