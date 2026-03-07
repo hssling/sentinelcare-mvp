@@ -156,6 +156,44 @@ class SentinelCarePipeline:
             "execution_log": self.execution_log[-len(events):],
         }
 
+    def run_capability_demo(self, events: list[Event]) -> dict:
+        result = self.process_events(events)
+        by_domain: dict[str, int] = defaultdict(int)
+        by_severity: dict[str, int] = defaultdict(int)
+        by_type: dict[str, int] = defaultdict(int)
+        routed_recipients: dict[str, int] = defaultdict(int)
+
+        for alert in result.alerts:
+            by_domain[alert.domain] += 1
+            by_severity[alert.severity.value] += 1
+            by_type[alert.alert_type] += 1
+            for recipient in alert.routed_to:
+                routed_recipients[recipient] += 1
+
+        # Simulate human handling for urgent and hard-stop alerts.
+        auto_closed = 0
+        for alert in result.alerts:
+            if alert.severity.value in {"urgent escalation", "hard-stop proposal"}:
+                self.record_review_action(
+                    alert_id=alert.alert_id,
+                    acted_by="demo_clinician",
+                    action_type="acknowledged_and_actioned",
+                    comment="Auto-actioned in capability demo run.",
+                )
+                auto_closed += 1
+
+        return {
+            "events_processed": len(events),
+            "alerts_generated": len(result.alerts),
+            "tasks_generated": len(result.tasks),
+            "alerts_by_domain": dict(sorted(by_domain.items())),
+            "alerts_by_severity": dict(sorted(by_severity.items())),
+            "top_alert_types": dict(sorted(by_type.items(), key=lambda x: x[1], reverse=True)[:8]),
+            "recipient_load": dict(sorted(routed_recipients.items(), key=lambda x: x[1], reverse=True)),
+            "auto_review_actions_recorded": auto_closed,
+            "post_demo_summary": self.summary(),
+        }
+
     def get_agent_catalog(self) -> list[dict[str, Any]]:
         return agent_catalog(self.agents)
 

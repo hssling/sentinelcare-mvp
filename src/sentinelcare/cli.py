@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import json
 
-from .demo_data import demo_events
+from .demo_data import capability_demo_events, demo_events
 from .pipeline import SentinelCarePipeline
 
 
 def main() -> None:
     pipeline = SentinelCarePipeline()
-    workflow = pipeline.run_full_workflow(demo_events())
-    print(json.dumps(workflow, indent=2))
+    capability = pipeline.run_capability_demo(capability_demo_events())
+    print(json.dumps({"capability_demo": capability}, indent=2))
+
+    print(json.dumps({"baseline_demo": pipeline.run_full_workflow(demo_events())}, indent=2))
 
     result = pipeline.process_events(demo_events())
     if result.alerts:

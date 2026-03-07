@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from .contracts import Event
-from .demo_data import demo_events
+from .demo_data import capability_demo_events, demo_events
 from .pipeline import SentinelCarePipeline
 
 app = FastAPI(title="SentinelCare MVP API", version="0.1.0")
@@ -42,6 +42,21 @@ def process_event(event: Event) -> dict:
 @app.post("/demo/run")
 def run_demo() -> dict:
     return pipeline.run_full_workflow(demo_events())
+
+
+@app.get("/demo/scenarios")
+def demo_scenarios() -> dict:
+    return {
+        "scenarios": [
+            {"name": "baseline_mixed", "event_count": len(demo_events())},
+            {"name": "capability_showcase", "event_count": len(capability_demo_events())},
+        ]
+    }
+
+
+@app.post("/demo/capability-run")
+def run_capability_demo() -> dict:
+    return pipeline.run_capability_demo(capability_demo_events())
 
 
 @app.get("/agents/catalog")

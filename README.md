@@ -40,6 +40,8 @@ Operational endpoint:
 - `GET /metrics/summary`
 - `GET /agents/catalog`
 - `POST /agents/run`
+- `GET /demo/scenarios`
+- `POST /demo/capability-run`
 
 ## Local development
 
@@ -50,6 +52,12 @@ python -m pip install -e .[dev]
 python -m pytest -q
 sentinelcare-demo
 sentinelcare-api
+```
+
+Capability demo from API:
+
+```bash
+curl -X POST http://localhost:8000/demo/capability-run
 ```
 
 ### Frontend

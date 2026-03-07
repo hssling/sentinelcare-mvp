@@ -1,4 +1,4 @@
-from sentinelcare.demo_data import demo_events
+from sentinelcare.demo_data import capability_demo_events, demo_events
 from sentinelcare.pipeline import SentinelCarePipeline
 
 
@@ -48,3 +48,14 @@ def test_agent_catalog_and_single_run() -> None:
     outcome = pipeline.run_single_agent("D", demo_events()[0])
     assert outcome["agent_id"] == "D"
     assert len(outcome["tasks"]) == 2
+
+
+def test_capability_demo_generates_rich_outputs() -> None:
+    pipeline = SentinelCarePipeline()
+    report = pipeline.run_capability_demo(capability_demo_events())
+    assert report["events_processed"] == len(capability_demo_events())
+    assert report["alerts_generated"] >= 10
+    assert "medication_safety" in report["alerts_by_domain"]
+    assert "critical_result_closure" in report["alerts_by_domain"]
+    assert "deterioration_surveillance" in report["alerts_by_domain"]
+    assert report["auto_review_actions_recorded"] >= 1
