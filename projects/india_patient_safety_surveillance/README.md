@@ -37,6 +37,9 @@ Core workflow:
 ## Repository contents
 
 - `docs/architecture`: technical and operating architecture
+  - national minimum dataset
+  - unified manual plus SentinelCare ingestion model
+  - AI-assisted workflow architecture
 - `docs/sops`: standard operating procedures
 - `docs/policy`: policy, governance, and advocacy documents
 - `docs/manuscripts`: publication-ready manuscript drafts and review/protocol papers
