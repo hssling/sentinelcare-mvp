@@ -14,19 +14,15 @@ Computable patient safety intelligence
 
 ## Authors
 
-[Author 1], [degrees], [affiliation]
-
-[Author 2], [degrees], [affiliation]
-
-[Author 3], [degrees], [affiliation]
+Dr. Siddalingaiah H S, Project SentinelCare, Bengaluru, India
 
 ## Corresponding author
 
-[Name]  
-[Department and institution]  
-[Postal address]  
-[Email]  
-[Telephone]
+Dr. Siddalingaiah H S  
+Project SentinelCare  
+Bengaluru, India  
+hssling@yahoo.com  
+To be supplied in journal submission portal
 
 ## Keywords
 
@@ -49,18 +45,18 @@ patient safety; clinical decision support; diagnostic safety; sepsis surveillanc
 
 ## Funding
 
-[Insert funding statement]
+No specific external funding was received for this framework development, manuscript preparation, or prototype implementation work.
 
 ## Conflict of interest
 
-[Insert conflict of interest statement]
+Dr. Siddalingaiah H S is the lead architect and maintainer of the SentinelCare concept, manuscripts, and prototype repository. No commercial product revenue is reported for the work described in this manuscript.
 
 ## Prior presentation
 
-[Insert if applicable, otherwise state: None]
+None.
 
 ## AI-use disclosure
 
 If applicable, include the following or a revised version at submission:
 
-"Generative AI was used for drafting support and language editing under direct human supervision. The authors reviewed and verified all factual statements, references, interpretations, and final manuscript text."
+"Generative AI assistance was used for drafting support and language editing under direct human supervision. The author reviewed and verified all factual statements, references, interpretations, and final manuscript text."

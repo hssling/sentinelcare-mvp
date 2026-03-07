@@ -29,6 +29,6 @@ Why:
 
 ## Notes
 
-1. This package uses placeholders for authorship, affiliations, funding, and conflicts because those require final investigator confirmation.
+1. This package uses a provisional metadata set captured in `../provisional_submission_metadata.md` and should be finalized before submission.
 2. The manuscript includes an AI-use disclosure template because the target journal requires disclosure of AI-assisted drafting if used.
 3. The manuscript is positioned as a framework synthesis with translational prototype linkage, not as a completed prospective clinical outcomes trial.

@@ -14,17 +14,15 @@ Governance-first safety validation
 
 ## Authors
 
-[Author 1], [degrees], [affiliation]
-
-[Author 2], [degrees], [affiliation]
+Dr. Siddalingaiah H S, Project SentinelCare, Bengaluru, India
 
 ## Corresponding author
 
-[Name]  
-[Department and institution]  
-[Postal address]  
-[Email]  
-[Telephone]
+Dr. Siddalingaiah H S  
+Project SentinelCare  
+Bengaluru, India  
+hssling@yahoo.com  
+To be supplied in journal submission portal
 
 ## Keywords
 
@@ -47,12 +45,12 @@ governance; patient safety; validation; clinical decision support; health inform
 
 ## Funding
 
-[Insert funding statement]
+No specific external funding was received for this framework development, manuscript preparation, or prototype implementation work.
 
 ## Conflict of interest
 
-[Insert conflict of interest statement]
+Dr. Siddalingaiah H S is the lead architect and maintainer of the SentinelCare concept, manuscripts, and prototype repository. No commercial product revenue is reported for the work described in this manuscript.
 
 ## Prior presentation
 
-[Insert if applicable, otherwise state: None]
+None.

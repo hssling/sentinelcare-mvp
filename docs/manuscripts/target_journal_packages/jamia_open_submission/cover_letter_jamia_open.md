@@ -21,5 +21,4 @@ Thank you for your consideration.
 
 Sincerely,
 
-[Corresponding author name]  
-on behalf of all authors
+Dr. Siddalingaiah H S

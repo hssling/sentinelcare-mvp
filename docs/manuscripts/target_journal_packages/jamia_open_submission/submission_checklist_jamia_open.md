@@ -35,8 +35,8 @@
 
 ## Author actions still required before submission
 
-1. Replace all placeholder author, affiliation, funding, and conflict fields.
-2. Confirm whether prior presentation or preprint posting applies.
+1. Confirm that provisional authorship and contact metadata match final institutional submission details.
+2. Confirm whether preprint posting applies before formal submission.
 3. Verify every reference against the final target style in the submission system.
 4. Export final figures in submission-ready graphic format.
-5. Add final human-authored AI disclosure wording if applicable.
+5. Retain or revise the AI-use disclosure wording at final submission.

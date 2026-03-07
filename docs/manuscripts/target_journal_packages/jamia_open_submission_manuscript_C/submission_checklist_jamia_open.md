@@ -13,7 +13,7 @@
 
 ## Author actions still required
 
-1. Insert authors, affiliations, funding, conflicts, and prior presentation details.
+1. Confirm that provisional authorship and contact metadata match final institutional submission details.
 2. Verify final reference punctuation against submission system style.
 3. Export final figures in submission-ready graphic format if raster format is requested.
-4. Add AI-use disclosure if applicable.
+4. Retain or revise the AI-use disclosure if applicable.

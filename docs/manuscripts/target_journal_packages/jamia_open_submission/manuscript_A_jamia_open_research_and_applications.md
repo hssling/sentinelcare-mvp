@@ -175,7 +175,7 @@ SentinelCare offers a coherent, governable, and implementation-ready framework f
 
 ## Funding
 
-[Insert funding statement]
+No specific external funding was received for this framework development, manuscript preparation, or prototype implementation work.
 
 ## Acknowledgments
 
@@ -185,7 +185,7 @@ If applicable at submission, include an AI-use disclosure consistent with journa
 
 ## Conflict of Interest
 
-[Insert conflict of interest statement]
+Dr. Siddalingaiah H S is the lead architect and maintainer of the SentinelCare concept, manuscripts, and prototype repository. No commercial product revenue is reported for the work described in this manuscript.
 
 ## Data Availability
 
