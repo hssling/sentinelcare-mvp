@@ -150,10 +150,43 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.success-banner {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(14, 107, 86, 0.22);
+  background: rgba(216, 237, 231, 0.8);
+  color: var(--accent-strong);
+  box-shadow: var(--shadow-soft);
+  overflow-wrap: anywhere;
+}
+
 .page-shell {
   max-width: 1480px;
   margin: 0 auto;
   padding: 22px 14px 56px;
+}
+
+.view-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 18px;
+}
+
+.view-tab {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  padding: 10px 16px;
+  font-weight: 600;
+}
+
+.view-tab.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
 }
 
 .hero {
@@ -313,6 +346,13 @@ li {
 .user-list {
   display: grid;
   gap: 10px;
+}
+
+.report-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(180px, 0.6fr);
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .report-card {
@@ -589,6 +629,10 @@ li {
 
   .action-row {
     display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .report-filters {
     grid-template-columns: 1fr;
   }
 

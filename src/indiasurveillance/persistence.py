@@ -337,28 +337,41 @@ class SupabaseStorage(StorageBackend):
         self.client: Client = create_client(url, service_role_key)
 
     def bootstrap_if_empty(self) -> None:
-        existing = self.client.table("surveillance_users").select("user_id", count="exact").limit(1).execute()
-        if getattr(existing, "count", 0):
-            return
         memory = InMemoryStorage()
-        for facility in memory.list_facilities():
-            self.import_facility(facility)
-        for department in memory.list_departments():
-            self.client.table("departments").upsert(_serialize(department)).execute()
-        for state_cell in memory.list_state_cells():
-            self.client.table("state_cells").upsert(_serialize(state_cell)).execute()
-        for policy in memory.list_policies():
-            self.client.table("policies").upsert(_serialize(policy)).execute()
-        for report in memory.list_reports():
-            self.client.table("event_reports").upsert(_serialize(report)).execute()
-        for event_case in memory.list_event_cases():
-            self.client.table("event_cases").upsert(_serialize(event_case)).execute()
-        for signal in memory.list_signals():
-            self.client.table("safety_signals").upsert(_serialize(signal)).execute()
-        for submission in memory.list_daily_submissions():
-            self.client.table("daily_submissions").upsert(_serialize(submission)).execute()
-        for user in memory.list_users():
-            self.create_user(user)
+        if self._table_empty("facilities", "facility_id"):
+            for facility in memory.list_facilities():
+                self.import_facility(facility)
+        if self._table_empty("departments", "department_id"):
+            for department in memory.list_departments():
+                self.client.table("departments").upsert(_serialize(department)).execute()
+        if self._table_empty("state_cells", "state_cell_id"):
+            for state_cell in memory.list_state_cells():
+                self.client.table("state_cells").upsert(_serialize(state_cell)).execute()
+        if self._table_empty("policies", "policy_id"):
+            for policy in memory.list_policies():
+                self.client.table("policies").upsert(_serialize(policy)).execute()
+        if self._table_empty("event_reports", "report_id"):
+            for report in memory.list_reports():
+                self.client.table("event_reports").upsert(_serialize(report)).execute()
+        if self._table_empty("event_cases", "case_id"):
+            for event_case in memory.list_event_cases():
+                self.client.table("event_cases").upsert(_serialize(event_case)).execute()
+        if self._table_empty("safety_signals", "signal_id"):
+            for signal in memory.list_signals():
+                self.client.table("safety_signals").upsert(_serialize(signal)).execute()
+        if self._table_empty("daily_submissions", "submission_id"):
+            for submission in memory.list_daily_submissions():
+                self.client.table("daily_submissions").upsert(_serialize(submission)).execute()
+        if self._table_empty("surveillance_users", "user_id"):
+            for user in memory.list_users():
+                self.create_user(user)
+
+    def _table_empty(self, table: str, key: str) -> bool:
+        try:
+            existing = self.client.table(table).select(key, count="exact").limit(1).execute()
+        except Exception:
+            return True
+        return not getattr(existing, "count", 0)
 
     def _rows(self, table: str, order: str | None = None, desc: bool = False) -> list[dict[str, Any]]:
         query = self.client.table(table).select("*")
