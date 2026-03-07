@@ -374,7 +374,10 @@ class SupabaseStorage(StorageBackend):
         return [EventReport(**row) for row in rows]
 
     def list_event_cases(self) -> list[EventCase]:
-        rows = self._rows("event_cases", "event_timestamp", desc=True)
+        try:
+            rows = self._rows("event_cases", "event_timestamp", desc=True)
+        except Exception:
+            return []
         for row in rows:
             row["created_at"] = _iso_datetime(row.get("created_at"))
             row["updated_at"] = _iso_datetime(row.get("updated_at"))
@@ -394,7 +397,10 @@ class SupabaseStorage(StorageBackend):
         return event_case
 
     def get_event_case(self, case_id: str) -> EventCase | None:
-        response = self.client.table("event_cases").select("*").eq("case_id", case_id).limit(1).execute()
+        try:
+            response = self.client.table("event_cases").select("*").eq("case_id", case_id).limit(1).execute()
+        except Exception:
+            return None
         if not response.data:
             return None
         row = dict(response.data[0])
@@ -553,7 +559,10 @@ class SupabaseStorage(StorageBackend):
         return [DomainBreakdownPoint(domain=key, count=value) for key, value in sorted(counts.items())]
 
     def list_ai_provider_configs(self, owner_user_id: str) -> list[AIProviderConfigStored]:
-        response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).order("updated_at", desc=True).execute()
+        try:
+            response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).order("updated_at", desc=True).execute()
+        except Exception:
+            return []
         rows = list(response.data or [])
         for row in rows:
             row["created_at"] = _iso_datetime(row.get("created_at"))
@@ -562,12 +571,18 @@ class SupabaseStorage(StorageBackend):
 
     def upsert_ai_provider_config(self, config: AIProviderConfigStored) -> AIProviderConfigStored:
         if config.is_active:
-            self.client.table("ai_provider_configs").update({"is_active": False}).eq("owner_user_id", config.owner_user_id).execute()
+            try:
+                self.client.table("ai_provider_configs").update({"is_active": False}).eq("owner_user_id", config.owner_user_id).execute()
+            except Exception:
+                pass
         self.client.table("ai_provider_configs").upsert(_serialize(config)).execute()
         return config
 
     def get_ai_provider_config(self, owner_user_id: str, config_id: str) -> AIProviderConfigStored | None:
-        response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).eq("config_id", config_id).limit(1).execute()
+        try:
+            response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).eq("config_id", config_id).limit(1).execute()
+        except Exception:
+            return None
         if not response.data:
             return None
         row = dict(response.data[0])
@@ -576,7 +591,10 @@ class SupabaseStorage(StorageBackend):
         return AIProviderConfigStored(**row)
 
     def get_active_ai_provider_config(self, owner_user_id: str) -> AIProviderConfigStored | None:
-        response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).eq("is_active", True).limit(1).execute()
+        try:
+            response = self.client.table("ai_provider_configs").select("*").eq("owner_user_id", owner_user_id).eq("is_active", True).limit(1).execute()
+        except Exception:
+            return None
         if not response.data:
             return None
         row = dict(response.data[0])
