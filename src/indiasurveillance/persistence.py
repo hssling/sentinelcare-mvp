@@ -54,6 +54,10 @@ def _serialize(model: Any) -> dict[str, Any]:
     raise TypeError("Unsupported model")
 
 
+def _clamp_non_negative(value: int) -> int:
+    return max(0, value)
+
+
 class StorageBackend(ABC):
     @abstractmethod
     def bootstrap_if_empty(self) -> None: ...
@@ -284,10 +288,10 @@ class InMemoryStorage(StorageBackend):
         )
         for item in submissions:
             bucket = buckets[item.submission_date]
-            bucket["patient_days"] += item.patient_days
-            bucket["near_misses"] += item.near_misses
-            bucket["harm_events"] += item.harm_events
-            bucket["severe_events"] += item.severe_events
+            bucket["patient_days"] += _clamp_non_negative(item.patient_days)
+            bucket["near_misses"] += _clamp_non_negative(item.near_misses)
+            bucket["harm_events"] += _clamp_non_negative(item.harm_events)
+            bucket["severe_events"] += _clamp_non_negative(item.severe_events)
         for item in cases:
             bucket = buckets[item.event_timestamp.date()]
             bucket["event_cases"] += 1
@@ -535,10 +539,10 @@ class SupabaseStorage(StorageBackend):
         )
         for item in submissions:
             bucket = buckets[item.submission_date]
-            bucket["patient_days"] += item.patient_days
-            bucket["near_misses"] += item.near_misses
-            bucket["harm_events"] += item.harm_events
-            bucket["severe_events"] += item.severe_events
+            bucket["patient_days"] += _clamp_non_negative(item.patient_days)
+            bucket["near_misses"] += _clamp_non_negative(item.near_misses)
+            bucket["harm_events"] += _clamp_non_negative(item.harm_events)
+            bucket["severe_events"] += _clamp_non_negative(item.severe_events)
         for item in cases:
             bucket = buckets[item.event_timestamp.date()]
             bucket["event_cases"] += 1

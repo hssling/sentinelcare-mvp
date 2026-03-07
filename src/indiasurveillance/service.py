@@ -166,6 +166,7 @@ class IndiaSurveillanceService:
     def create_daily_submission(self, request: DailySubmissionCreate, user: UserIdentity) -> DailySurveillanceSubmission:
         if user.role not in {"facility_reporter", "facility_safety_officer"}:
             raise PermissionError("User is not allowed to submit daily surveillance data")
+        self._validate_non_negative_counts(request.model_dump())
         department = self._department(request.department_id)
         if user.facility_id and department.facility_id != user.facility_id:
             raise PermissionError("Department does not belong to the user's facility")
@@ -550,3 +551,25 @@ class IndiaSurveillanceService:
                 detail=detail,
             )
         )
+
+    def _validate_non_negative_counts(self, payload: dict[str, object]) -> None:
+        numeric_fields = {
+            "patient_days",
+            "admissions",
+            "discharges",
+            "surgeries",
+            "deliveries",
+            "critical_results_count",
+            "near_misses",
+            "no_harm_events",
+            "harm_events",
+            "severe_events",
+            "medication_events",
+            "procedure_events",
+            "infection_events",
+            "diagnostic_events",
+        }
+        for key in numeric_fields:
+            value = payload.get(key)
+            if isinstance(value, (int, float)) and value < 0:
+                raise ValueError(f"{key} cannot be negative")

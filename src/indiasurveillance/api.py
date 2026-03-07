@@ -116,6 +116,8 @@ def daily_submissions(user=Depends(session_user)):
 def create_daily_submission(request: DailySubmissionCreate, user=Depends(session_user)):
     try:
         return service.create_daily_submission(request, user)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=f"Unknown department_id: {exc.args[0]}") from exc
     except PermissionError as exc:
