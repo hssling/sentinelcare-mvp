@@ -382,7 +382,7 @@ li {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 7px 12px;
   font-size: 11px;
   font-weight: 700;
   background: rgba(255, 255, 255, 0.92);
@@ -390,12 +390,17 @@ li {
   white-space: normal;
   text-align: center;
   max-width: 100%;
+  line-height: 1.25;
+  min-height: 34px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
 }
 
 .severity-severe,
@@ -621,5 +626,6 @@ li {
 
   .pill {
     align-self: start;
+    max-width: 100%;
   }
 }
