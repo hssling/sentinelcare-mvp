@@ -18,6 +18,8 @@ dev = [
 [project.scripts]
 sentinelcare-demo = "sentinelcare.cli:main"
 sentinelcare-api = "sentinelcare.api:run"
+india-surveillance-demo = "indiasurveillance.cli:main"
+india-surveillance-api = "indiasurveillance.api:run"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
