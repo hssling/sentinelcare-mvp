@@ -21,4 +21,4 @@ Thank you for your consideration.
 
 Sincerely,
 
-Dr. Siddalingaiah H S
+Dr Siddalingaiah H S

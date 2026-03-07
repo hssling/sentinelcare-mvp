@@ -17,4 +17,4 @@ This work is original, has not been published previously, and is not under consi
 
 Sincerely,
 
-Dr. Siddalingaiah H S
+Dr Siddalingaiah H S

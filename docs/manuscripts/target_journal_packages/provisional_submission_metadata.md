@@ -1,23 +1,25 @@
 # Provisional Submission Metadata
 
-This file records the provisional metadata used to replace unresolved placeholders across the current JAMIA Open manuscript packages.
+This file records the current submission metadata used across the active JAMIA Open manuscript packages.
 
 ## Purpose
 
-These values are working submission metadata intended to keep the manuscript packages complete and internally consistent until final institutional details are confirmed.
+These values are the current author-supplied submission metadata for the active manuscript packages.
 
-## Provisional authorship
+## Authorship
 
-- Author: `Dr. Siddalingaiah H S`
-- Role: `Independent researcher and SentinelCare project lead`
-- Project affiliation: `Project SentinelCare, Bengaluru, India`
+- Author: `Dr Siddalingaiah H S`
+- Role: `Professor, Community Medicine`
+- Institutional affiliation: `Shridevi Institute of Medical Sciences and Research Hospital, Tumkur`
+- Additional project role: `SentinelCare project lead`
 
 ## Correspondence
 
 - Corresponding author: `Dr. Siddalingaiah H S`
-- Affiliation: `Project SentinelCare, Bengaluru, India`
+- Affiliation: `Professor, Community Medicine, Shridevi Institute of Medical Sciences and Research Hospital, Tumkur`
 - Email: `hssling@yahoo.com`
-- Telephone: `To be supplied in journal submission portal`
+- Telephone: `8941087719`
+- ORCID: `0000-0002-4771-8285`
 
 ## Funding statement
 
@@ -25,7 +27,7 @@ These values are working submission metadata intended to keep the manuscript pac
 
 ## Conflict of interest statement
 
-`Dr. Siddalingaiah H S is the lead architect and maintainer of the SentinelCare concept, manuscripts, and prototype repository. No commercial product revenue is reported for the work described in these manuscripts.`
+`Dr Siddalingaiah H S is the lead architect and maintainer of the SentinelCare concept, manuscripts, and prototype repository. No commercial product revenue is reported for the work described in these manuscripts.`
 
 ## Prior presentation
 

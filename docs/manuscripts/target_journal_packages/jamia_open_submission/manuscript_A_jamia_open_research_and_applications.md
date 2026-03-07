@@ -185,7 +185,7 @@ If applicable at submission, include an AI-use disclosure consistent with journa
 
 ## Conflict of Interest
 
-Dr. Siddalingaiah H S is the lead architect and maintainer of the SentinelCare concept, manuscripts, and prototype repository. No commercial product revenue is reported for the work described in this manuscript.
+Dr Siddalingaiah H S is the lead architect and maintainer of the SentinelCare concept, manuscripts, and prototype repository. No commercial product revenue is reported for the work described in this manuscript.
 
 ## Data Availability
 
