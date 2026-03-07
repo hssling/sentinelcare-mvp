@@ -27,6 +27,12 @@ jobs:
           envs: SUPABASE_INDIA_URL,SUPABASE_INDIA_SERVICE_ROLE_KEY,INDIA_SURVEILLANCE_JWT_SECRET
           script: |
             set -e
+            if ! command -v git >/dev/null 2>&1; then
+              sudo dnf install -y git
+            fi
+            if ! command -v python3.11 >/dev/null 2>&1; then
+              sudo dnf install -y python3.11 python3.11-pip
+            fi
             mkdir -p ~/apps
             cd ~/apps
             if [ ! -d sentinelcare-mvp/.git ]; then
