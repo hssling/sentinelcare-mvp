@@ -74,7 +74,8 @@ type Policy = { policy_id: string; title: string; state: string; validation_phas
 type Notification = { notification_id: string; title: string; message: string; severity: string; status: string; created_at: string };
 type AuditLog = { audit_id: string; created_at: string; action: string; entity_type: string; entity_id: string; detail: string; actor_user_id?: string | null };
 
-const apiBase = (import.meta as ImportMeta & { env: { VITE_INDIA_SURVEILLANCE_API_BASE?: string } }).env.VITE_INDIA_SURVEILLANCE_API_BASE || 'http://127.0.0.1:8010';
+const configuredApiBase = (import.meta as ImportMeta & { env: { VITE_INDIA_SURVEILLANCE_API_BASE?: string } }).env.VITE_INDIA_SURVEILLANCE_API_BASE;
+const apiBase = window.location.protocol === 'https:' ? '/api' : (configuredApiBase || 'http://127.0.0.1:8010');
 const sessionStorageKey = 'india-surveillance-session';
 
 async function api<T>(path: string, token?: string, options?: RequestInit): Promise<T> {
