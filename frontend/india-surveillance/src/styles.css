@@ -329,6 +329,32 @@ textarea {
   position: relative;
 }
 
+.page-view {
+  display: grid;
+  gap: 18px;
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+}
+
+.route-title {
+  margin: 0;
+  font-family: 'Fraunces', serif;
+  font-size: clamp(28px, 3.2vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.route-copy {
+  max-width: 520px;
+  margin: 0;
+  text-align: right;
+}
+
 .view-nav {
   display: flex;
   gap: 10px;
@@ -521,12 +547,17 @@ li {
   border-bottom: 1px solid rgba(24, 37, 31, 0.08);
 }
 
+.panel-head > :first-child {
+  min-width: 0;
+}
+
 .panel-head h2 {
   margin: 0;
   font-family: 'Fraunces', serif;
   font-size: 24px;
   line-height: 1.05;
   letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
 }
 
 .report-list,
@@ -542,6 +573,65 @@ li {
   grid-template-columns: minmax(0, 1.6fr) minmax(180px, 0.6fr);
   gap: 12px;
   margin-bottom: 12px;
+}
+
+.summary-chips {
+  margin-bottom: 12px;
+}
+
+.queue-table-shell {
+  overflow: auto;
+  border: 1px solid rgba(24, 37, 31, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.queue-table th,
+.queue-table td {
+  padding: 14px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(24, 37, 31, 0.08);
+  overflow-wrap: anywhere;
+}
+
+.queue-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  background: rgba(248, 244, 238, 0.86);
+  position: sticky;
+  top: 0;
+}
+
+.queue-table tbody tr {
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.queue-table tbody tr:hover {
+  background: rgba(14, 107, 86, 0.04);
+}
+
+.queue-table tbody tr.selected {
+  background: rgba(14, 107, 86, 0.08);
+}
+
+.queue-mobile-list {
+  display: none;
+  gap: 10px;
+}
+
+.compact-card {
+  display: grid;
+  gap: 6px;
 }
 
 .report-card {
@@ -820,6 +910,16 @@ li {
     padding: 14px 10px 34px;
   }
 
+  .page-head {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .route-copy {
+    text-align: left;
+    max-width: none;
+  }
+
   .login-shell {
     padding: 14px;
   }
@@ -890,6 +990,14 @@ li {
     grid-template-columns: 1fr;
   }
 
+  .queue-table-shell {
+    display: none;
+  }
+
+  .queue-mobile-list {
+    display: grid;
+  }
+
   .hero-card .action-row {
     grid-template-columns: 1fr 1fr;
   }
@@ -939,6 +1047,16 @@ li {
   .pill {
     align-self: start;
     max-width: 100%;
+  }
+
+  .view-nav {
+    width: 100%;
+    border-radius: 24px;
+  }
+
+  .view-tab {
+    flex: 1 1 calc(50% - 10px);
+    justify-content: center;
   }
 }
 
