@@ -1,0 +1,61 @@
+:root {
+  --bg: #f3f5f7;
+  --ink: #1a2d35;
+  --card: #ffffff;
+  --line: #d8e0e6;
+  --brand: #0d6e6e;
+  --error: #9f2d2d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at 10% 10%, #cde7e4, var(--bg) 35%);
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--brand);
+}
+
+.hero p {
+  margin: 0.5rem 0 1.5rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  padding: 0.65rem 0.4rem;
+  font-size: 0.92rem;
+}
+
+.error {
+  color: var(--error);
+}
+
