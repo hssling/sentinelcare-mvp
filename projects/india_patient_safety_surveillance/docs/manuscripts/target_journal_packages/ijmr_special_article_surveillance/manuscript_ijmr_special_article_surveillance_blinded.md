@@ -119,18 +119,7 @@ Every signal should preserve traceability:
 
 ### 5. Governance and audit
 
-Table 1 summarizes the minimum design requirements that convert a reporting portal into a national surveillance and learning system rather than a passive incident repository.
-
-| Design layer | Minimum national requirement | Operational rationale |
-| --- | --- | --- |
-| Intake and reporting | Separate daily burden surveillance from event-level case reporting | Preserves routine monitoring while allowing deeper investigation |
-| Taxonomy and classification | Use a canonical safety taxonomy across facilities and states | Enables comparability, aggregation, and benchmarking |
-| Denominators and context | Capture patient-load and operational strain data | Supports interpretable rates and threshold setting |
-| Review workflow | Define facility, state, and national review responsibilities | Prevents unowned reports and weak closure loops |
-| Signal detection | Support threshold-based and pattern-based escalation | Improves early recognition of recurrent or severe risks |
-| Governance and audit | Preserve traceability, CAPA, and policy feedback | Converts reporting into visible learning and prevention |
-| Interoperability | Align with registries and API-based exchange | Reduces siloing and allows future digital integration |
-| AI assistance | Restrict AI to bounded assistive functions under human oversight | Improves structuring and prioritization without replacing accountability |
+Table I summarizes the minimum design requirements that convert a reporting portal into a national surveillance and learning system rather than a passive incident repository.
 
 The surveillance system should include durable audit trails, policy linkage, role-aware permissions, and documented closure logic. Governance is not an add-on; it is what distinguishes learning from passive reporting. Policy versions, escalations, and CAPA records should be queryable and reviewable.
 
@@ -241,6 +230,10 @@ The main limitation is that this paper is conceptual and review-based. It does n
 
 India needs a patient safety surveillance system that does more than collect incident narratives. A scalable system must distinguish routine surveillance from event-level learning, use a common taxonomy, support facility-to-national review functions, preserve auditability, and be interoperable with the country's evolving digital health architecture. AI may help with classification and summarization, but the system must remain human-governed and prevention-oriented. A federated patient safety surveillance model offers a realistic path for converting fragmented safety information into structured learning and safer health-system action in India.
 
+## Acknowledgment
+
+The author acknowledges the implementation-learning feedback from facility, state, and national workflow simulation exercises conducted during the development of the SentinelCare and India Patient Safety Surveillance frameworks.
+
 ## Declarations
 
 ### Ethical approval and consent to participate
@@ -253,7 +246,7 @@ Not applicable.
 
 ### Availability of data and materials
 
-No primary analytic dataset was generated for this manuscript. All cited policy documents, guidance sources, and published literature are publicly available through the referenced sources.
+No primary analytic dataset was generated for this manuscript. All cited policy documents, guidance sources, and published literature are publicly available through the referenced sources. Code and implementation documentation are available at https://github.com/hssling/sentinelcare-mvp. Live application endpoint: https://mederror-india-surveillance.netlify.app/.
 
 ### Funding
 
@@ -298,3 +291,28 @@ AI-assisted tools were used for drafting support and language organization under
 23. World Health Organization. World patient safety day 2024 campaign materials. Available from: https://www.who.int/campaigns/world-patient-safety-day/2024, accessed on March 8, 2026.
 24. World Bank. India - transforming India's public health surveillance through digital systems. Available from: https://documents1.worldbank.org/curated/en/099145106042242190/pdf/P175676001543d000b7c709870c0c3375b.pdf, accessed on March 8, 2026.
 25. Flemons WW, McRae G. Reporting, learning and the culture of safety. Healthc Q 2012;15 Spec No:12-7.
+
+## Table I. Core design requirements for a federated patient safety surveillance system in India
+
+| Design layer | Minimum national requirement | Operational rationale |
+| --- | --- | --- |
+| Intake and reporting | Separate daily burden surveillance from event-level case reporting | Preserves routine monitoring while allowing deeper investigation |
+| Taxonomy and classification | Use a canonical safety taxonomy across facilities and states | Enables comparability, aggregation, and benchmarking |
+| Denominators and context | Capture patient-load and operational strain data | Supports interpretable rates and threshold setting |
+| Review workflow | Define facility, state, and national review responsibilities | Prevents unowned reports and weak closure loops |
+| Signal detection | Support threshold-based and pattern-based escalation | Improves early recognition of recurrent or severe risks |
+| Governance and audit | Preserve traceability, CAPA, and policy feedback | Converts reporting into visible learning and prevention |
+| Interoperability | Align with registries and API-based exchange | Reduces siloing and allows future digital integration |
+| AI assistance | Restrict AI to bounded assistive functions under human oversight | Improves structuring and prioritization without replacing accountability |
+
+## Legends to Figures
+
+**Figure 1.** Federated operating model for patient safety surveillance in India.  
+The surveillance model is organized across facility, state, and national layers. Daily operational surveillance and event-level learning cases originate at facility level. State surveillance cells perform aggregation, signal review, and escalation. National governance functions synthesize trends, policy implications, and benchmarking outputs.
+
+**Figure 2.** Unified data and learning flow.  
+Manual submissions, digital system events, and future machine-detected signals flow into a common safety intelligence layer. Triage, investigation, CAPA, analytics, AI assistance, and governance review operate on the normalized event stream, allowing both local action and system-level learning.
+
+## Figures
+
+Figure 1 and Figure 2 are provided in the separate figures document and source image files for production-quality handling.

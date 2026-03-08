@@ -2,11 +2,11 @@
 
 ## Primary upload set
 
-1. `01_title_page_ijmr_round1.docx`
+1. `01_first_page_file_ijmr_round1.docx`
 2. `02_blinded_manuscript_ijmr_round1.docx`
 3. `03_cover_letter_ijmr_round1.docx`
-4. `04_summary_table_ijmr_round1.docx`
-5. `05_figure_package_ijmr_round1.docx`
+4. `04_figures_ijmr_round1.docx`
+5. `Table I is included in 02_blinded_manuscript_ijmr_round1.docx after References`
 6. `06_declarations_ijmr_round1.docx`
 
 ## Supporting files in source package

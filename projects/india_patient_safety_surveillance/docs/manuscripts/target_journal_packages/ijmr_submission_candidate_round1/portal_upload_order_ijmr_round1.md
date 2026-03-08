@@ -2,12 +2,11 @@
 
 Upload in this order unless the journal portal explicitly requests a different sequence:
 
-1. title page
+1. first page file
 2. blinded manuscript
 3. cover letter
-4. summary table
-5. figure package
-6. declarations, if the portal provides a separate supplementary or disclosure slot
+4. figures document
+5. declarations, if the portal provides a separate supplementary or disclosure slot
 
 ## Metadata to confirm during upload
 
