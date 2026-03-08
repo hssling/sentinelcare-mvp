@@ -18,3 +18,4 @@ This folder is the frozen upload set for the first IJMR submission candidate.
 2. upload manifest
 3. portal upload order note
 4. final pre-submission note
+5. declarations file

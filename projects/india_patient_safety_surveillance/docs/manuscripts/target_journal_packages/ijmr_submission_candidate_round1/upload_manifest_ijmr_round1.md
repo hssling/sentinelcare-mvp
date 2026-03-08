@@ -7,6 +7,7 @@
 3. `03_cover_letter_ijmr_round1.docx`
 4. `04_summary_table_ijmr_round1.docx`
 5. `05_figure_package_ijmr_round1.docx`
+6. `06_declarations_ijmr_round1.docx`
 
 ## Supporting files in source package
 

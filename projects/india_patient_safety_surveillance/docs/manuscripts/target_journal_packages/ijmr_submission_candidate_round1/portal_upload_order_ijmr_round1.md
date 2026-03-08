@@ -7,6 +7,7 @@ Upload in this order unless the journal portal explicitly requests a different s
 3. cover letter
 4. summary table
 5. figure package
+6. declarations, if the portal provides a separate supplementary or disclosure slot
 
 ## Metadata to confirm during upload
 

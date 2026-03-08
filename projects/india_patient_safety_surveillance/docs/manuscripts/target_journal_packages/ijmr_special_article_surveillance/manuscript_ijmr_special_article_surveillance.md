@@ -241,6 +241,36 @@ The main limitation is that this paper is conceptual and review-based. It does n
 
 India needs a patient safety surveillance system that does more than collect incident narratives. A scalable system must distinguish routine surveillance from event-level learning, use a common taxonomy, support facility-to-national review functions, preserve auditability, and be interoperable with the country's evolving digital health architecture. AI may help with classification and summarization, but the system must remain human-governed and prevention-oriented. A federated patient safety surveillance model offers a realistic path for converting fragmented safety information into structured learning and safer health-system action in India.
 
+## Declarations
+
+### Ethical approval and consent to participate
+
+Not applicable. This manuscript is a structured narrative review and framework synthesis. No human participants were enrolled, and no primary patient-level dataset was collected or analyzed.
+
+### Consent for publication
+
+Not applicable.
+
+### Availability of data and materials
+
+No primary analytic dataset was generated for this manuscript. All cited policy documents, guidance sources, and published literature are publicly available through the referenced sources.
+
+### Funding
+
+No specific external funding was received for this work.
+
+### Conflicts of interest
+
+The author is the originating conceptual lead for the SentinelCare and India Patient Safety Surveillance project frameworks described in this manuscript.
+
+### Author contributions
+
+The sole author conceived the manuscript, conducted the literature and policy synthesis, developed the framework, and wrote and revised the manuscript.
+
+### AI use disclosure
+
+AI-assisted tools were used for drafting support and language organization under direct author supervision. The author reviewed, corrected, and takes full responsibility for the final content.
+
 ## References
 
 1. World Health Organization. Global patient safety action plan 2021-2030: towards eliminating avoidable harm in health care. Geneva: WHO; 2021.

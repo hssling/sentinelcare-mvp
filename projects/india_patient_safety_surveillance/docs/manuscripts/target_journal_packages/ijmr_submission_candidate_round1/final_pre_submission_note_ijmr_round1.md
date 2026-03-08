@@ -12,7 +12,8 @@ Submit the federated surveillance framework manuscript first and retain the repo
 2. confirm title page and blinded manuscript are not mixed
 3. confirm abstract, keywords, and running title are final
 4. confirm reference punctuation against the latest IJMR examples
-5. confirm no unsupported claims of implementation effectiveness remain
+5. confirm declarations file is uploaded if the portal requests separate disclosure material
+6. confirm no unsupported claims of implementation effectiveness remain
 
 ## After submission
 

@@ -22,6 +22,7 @@ The current project does not yet have multicentric empirical outcome data strong
 - [cover_letter_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/cover_letter_ijmr.md)
 - [submission_notes_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/submission_notes_ijmr.md)
 - [ijmr_word_format_pass.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/ijmr_word_format_pass.md)
+- [declarations_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/declarations_ijmr.md)
 - [summary_table_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/summary_table_ijmr.md)
 - [submission_bundle_index_ijmr.md](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_special_article_surveillance/submission_bundle_index_ijmr.md)
 
