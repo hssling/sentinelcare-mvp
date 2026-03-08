@@ -77,6 +77,7 @@ Supporting IJMR decision assets:
 
 - [IJMR submission priority note](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_submission_priority_note.md)
 - [IJMR lead-package submission checklist](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_submission_checklist_lead_package.md)
+- [IJMR round-1 frozen submission candidate](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_submission_candidate_round1/README.md)
 
 ## Code Locations
 
