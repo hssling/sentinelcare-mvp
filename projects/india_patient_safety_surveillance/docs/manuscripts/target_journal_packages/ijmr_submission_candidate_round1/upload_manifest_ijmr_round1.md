@@ -8,6 +8,7 @@
 4. `04_figures_ijmr_round1.docx`
 5. `Table I is included in 02_blinded_manuscript_ijmr_round1.docx after References`
 6. `06_declarations_ijmr_round1.docx`
+7. `07_graphical_abstract_ijmr_round1.docx`
 
 ## Supporting files in source package
 

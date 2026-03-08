@@ -66,7 +66,8 @@ AI-assisted tools were used for drafting support and language organization under
 Word count (excluding abstract, references, tables, and figure legends): approximately 3700 words.
 
 Number of tables: 1  
-Number of figures: 2
+Number of figures: 2  
+Graphical abstract: 1
 
 ## Disclaimers
 
