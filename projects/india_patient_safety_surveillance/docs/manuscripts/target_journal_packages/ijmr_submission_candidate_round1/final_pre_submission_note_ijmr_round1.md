@@ -1,6 +1,6 @@
 # Final pre-submission note for IJMR round 1
 
-This round-1 package is the repository’s preferred first IJMR submission candidate.
+This round-1 package is the repository's preferred first IJMR submission candidate.
 
 ## Final intent
 
@@ -19,3 +19,11 @@ Submit the federated surveillance framework manuscript first and retain the repo
 
 1. preserve this folder as the historical submission snapshot
 2. record submission date and manuscript ID here once the portal submission is completed
+
+## Submission record
+
+1. Journal: `Indian Journal of Medical Research (IJMR)`
+2. Manuscript tracking ID: `IJMR_874_2026_a`
+3. Status: `Submitted`
+4. Submitted artifact: `IJMR_874_2026_a.pdf`
+5. Submission timestamp (local file time): `March 8, 2026, 19:30:36 (Asia/Calcutta)`

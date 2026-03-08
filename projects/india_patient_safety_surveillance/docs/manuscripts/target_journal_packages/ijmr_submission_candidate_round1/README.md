@@ -20,3 +20,9 @@ This folder is the frozen upload set for the first IJMR submission candidate.
 4. final pre-submission note
 5. declarations file
 6. first page file and figures file prepared in IJMR submission format
+
+## Current status
+
+1. Submission completed
+2. Journal tracking ID: `IJMR_874_2026_a`
+3. Submitted PDF snapshot: `IJMR_874_2026_a.pdf`
