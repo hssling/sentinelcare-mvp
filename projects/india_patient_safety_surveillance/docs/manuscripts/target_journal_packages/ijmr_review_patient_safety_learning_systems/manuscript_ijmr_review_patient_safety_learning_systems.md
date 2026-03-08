@@ -8,9 +8,9 @@ Patient safety reporting systems are widely promoted as mechanisms for detecting
 
 ## Introduction
 
-Reporting systems are among the most visible instruments in patient safety programmes, yet their actual contribution to safer care depends on what happens after reporting. A rise in reports may indicate openness, worsening safety, better detection, or all three at once. Conversely, low reporting may reflect under-recognition, fear, weak reporting culture, or genuinely low event burden. These ambiguities have led to recurring debates in the patient safety literature about what incident reporting systems can and cannot achieve [1-4].
+Reporting systems are among the most visible instruments in patient safety programmes, yet their actual contribution to safer care depends on what happens after reporting. A rise in reports may indicate openness, worsening safety, better detection, or all three at once. Conversely, low reporting may reflect under-recognition, fear, weak reporting culture, or genuinely low event burden. These ambiguities have led to recurring debates in the patient safety literature about what incident reporting systems can and cannot achieve.<sup>1-4</sup>
 
-The most consistent finding is that reports alone do not produce safer systems. Learning requires classification, analysis, prioritization, feedback, accountability, and preventive redesign. The WHO Global Patient Safety Action Plan and broader learning-health-system literature both emphasize that reporting should be part of a larger cycle of learning and improvement rather than a terminal bureaucratic act [5,6].
+The most consistent finding is that reports alone do not produce safer systems. Learning requires classification, analysis, prioritization, feedback, accountability, and preventive redesign. The WHO Global Patient Safety Action Plan and broader learning-health-system literature both emphasize that reporting should be part of a larger cycle of learning and improvement rather than a terminal bureaucratic act.<sup>5,6</sup>
 
 India presents a particularly important context for this issue. The health system spans public and private sectors, tertiary institutions and smaller facilities, digital and paper-based workflows, and diverse organizational cultures. A patient safety reporting and learning architecture for India therefore has to be realistic about implementation burden, heterogeneity, governance needs, and digital readiness.
 
@@ -22,15 +22,15 @@ This paper was developed as a structured narrative review and implementation syn
 
 ## What reporting systems do well
 
-Incident reporting systems can capture signals that are difficult to observe through mortality statistics, utilization dashboards, or complaint systems alone. Near misses, process deviations, communication failures, workarounds, and local operational hazards are often first visible through staff reports. Reporting systems can also strengthen safety culture when staff observe that reporting is feasible, safe, and followed by visible action [2,3,7].
+Incident reporting systems can capture signals that are difficult to observe through mortality statistics, utilization dashboards, or complaint systems alone. Near misses, process deviations, communication failures, workarounds, and local operational hazards are often first visible through staff reports. Reporting systems can also strengthen safety culture when staff observe that reporting is feasible, safe, and followed by visible action.<sup>2,3,7</sup>
 
-They are particularly valuable for surfacing weak signals, understanding process failure modes, and supporting local reflection. In complex settings, reporting can make latent hazards visible before they produce catastrophic harm. Reporting systems also generate qualitative data that can contextualize quantitative indicators and help organizations interpret why harm occurs, not merely how often [4,8].
+They are particularly valuable for surfacing weak signals, understanding process failure modes, and supporting local reflection. In complex settings, reporting can make latent hazards visible before they produce catastrophic harm. Reporting systems also generate qualitative data that can contextualize quantitative indicators and help organizations interpret why harm occurs, not merely how often.<sup>4,8</sup>
 
 ## What reporting systems do poorly when badly designed
 
-Reporting systems become ineffective when they are treated as ends in themselves. Common failures include taxonomic inconsistency, poor data quality, low feedback, punitive interpretation, and lack of analytical triage. Reviews have shown that staff frequently disengage when reporting yields no visible improvement or when the process is perceived as administratively extractive rather than safety-enhancing [2,3,9].
+Reporting systems become ineffective when they are treated as ends in themselves. Common failures include taxonomic inconsistency, poor data quality, low feedback, punitive interpretation, and lack of analytical triage. Reviews have shown that staff frequently disengage when reporting yields no visible improvement or when the process is perceived as administratively extractive rather than safety-enhancing.<sup>2,3,9</sup>
 
-Another common error is using report volume as a direct safety score. High reporting may reflect strong culture and detection capacity, while low reporting may represent concealment or indifference. Report counts therefore need denominator context, interpretive caution, and linkage to learning action rather than simplistic benchmarking [1,4,10].
+Another common error is using report volume as a direct safety score. High reporting may reflect strong culture and detection capacity, while low reporting may represent concealment or indifference. Report counts therefore need denominator context, interpretive caution, and linkage to learning action rather than simplistic benchmarking.<sup>1,4,10</sup>
 
 ## Conditions required for reporting to become learning
 
@@ -38,29 +38,29 @@ Across the literature, several recurrent conditions appear necessary.
 
 ### Non-punitive culture
 
-People do not report consistently when they expect blame, humiliation, or formal retaliation. Organizational justice, confidentiality protections, and credible non-punitive norms are foundational [2,7,9].
+People do not report consistently when they expect blame, humiliation, or formal retaliation. Organizational justice, confidentiality protections, and credible non-punitive norms are foundational.<sup>2,7,9</sup>
 
 ### Structured classification
 
-Free-text narratives alone cannot support aggregation, benchmarking, or pattern recognition. Effective systems require common taxonomies for domain, process stage, severity, contributory factors, and closure status [1,4,8].
+Free-text narratives alone cannot support aggregation, benchmarking, or pattern recognition. Effective systems require common taxonomies for domain, process stage, severity, contributory factors, and closure status.<sup>1,4,8</sup>
 
 ### Analytical triage
 
-Not all reports deserve the same response. Systems need triage pathways that distinguish routine burden monitoring from severe, recurrent, or investigable events [3,10].
+Not all reports deserve the same response. Systems need triage pathways that distinguish routine burden monitoring from severe, recurrent, or investigable events.<sup>3,10</sup>
 
 ### Feedback and visible action
 
-The strongest determinant of sustained engagement is whether staff see that reports lead to review, correction, or learning. Feedback has to exist at local, managerial, and system levels [2,7].
+The strongest determinant of sustained engagement is whether staff see that reports lead to review, correction, or learning. Feedback has to exist at local, managerial, and system levels.<sup>2,7</sup>
 
 ### Governance and closure discipline
 
-Learning systems need ownership. Reports should not remain indefinitely open, and closure should include quality review rather than simple administrative disposal. CAPA processes, audit trails, and escalation rules matter [5,6].
+Learning systems need ownership. Reports should not remain indefinitely open, and closure should include quality review rather than simple administrative disposal. CAPA processes, audit trails, and escalation rules matter.<sup>5,6</sup>
 
 ## Implications for India
 
 These lessons imply that India should avoid designing patient safety reporting as a single undifferentiated national portal. A better approach is a federated model with layered responsibilities. Facilities should own reporting, initial analysis, and immediate containment. State structures should review trends, manage escalation, and coordinate cross-facility learning. National structures should support taxonomy, standards, benchmarking, and policy response.
 
-Digital architecture should support both manual and interoperable ingestion. ABDM-era infrastructure creates an opportunity to avoid a siloed standalone system, but interoperability should be added in service of workflows, not as a substitute for them. Similarly, AI may assist with structuring narratives, suggesting classifications, or identifying patterns, but should remain bounded by human review and governance [11-14].
+Digital architecture should support both manual and interoperable ingestion. ABDM-era infrastructure creates an opportunity to avoid a siloed standalone system, but interoperability should be added in service of workflows, not as a substitute for them. Similarly, AI may assist with structuring narratives, suggesting classifications, or identifying patterns, but should remain bounded by human review and governance.<sup>11-14</sup>
 
 ## Discussion
 

@@ -8,13 +8,13 @@ Patient safety remains an under-institutionalized health-systems function in man
 
 ## Introduction
 
-Unsafe care is now recognized as a major and preventable contributor to morbidity, mortality, inefficiency, and erosion of trust across health systems. The global policy movement on patient safety has increasingly shifted from isolated quality-improvement projects toward system-wide reporting, learning, and governance. The WHO Global Patient Safety Action Plan 2021-2030 and the WHO Global Patient Safety Report 2024 emphasize that health systems need stronger reporting and learning structures, safer processes, better workforce capability, and mechanisms for transforming incident information into preventive action rather than merely documenting failure [1,2].
+Unsafe care is now recognized as a major and preventable contributor to morbidity, mortality, inefficiency, and erosion of trust across health systems. The global policy movement on patient safety has increasingly shifted from isolated quality-improvement projects toward system-wide reporting, learning, and governance. The WHO Global Patient Safety Action Plan 2021-2030 and the WHO Global Patient Safety Report 2024 emphasize that health systems need stronger reporting and learning structures, safer processes, better workforce capability, and mechanisms for transforming incident information into preventive action rather than merely documenting failure.<sup>1,2</sup>
 
 In India, the need for such a shift is especially important. The health system is large, mixed, heterogeneous, and operationally decentralized. Safety-relevant information exists across hospitals, medical colleges, laboratories, accreditation activities, disease surveillance systems, pharmacovigilance structures, and programme-specific reporting mechanisms. However, these streams do not yet function as an integrated patient safety surveillance and learning system. In many facilities, incident review remains episodic, heavily narrative, difficult to aggregate, and weakly connected to preventive governance. In other settings, adverse events may be known locally but not converted into structured, comparable, and escalatable intelligence.
 
-At the same time, India is expanding digital public health and digital health infrastructure. The Ayushman Bharat Digital Mission (ABDM) is building foundational digital health architecture for identity, registries, and interoperability [3,4]. The Integrated Health Information Platform (IHIP) has demonstrated the operational importance of digital surveillance concepts for large-scale public health monitoring [5]. These developments create an opportunity to think beyond facility-bound incident registers and toward a federated patient safety surveillance model that is digitally ready, operationally layered, and governance-oriented.
+At the same time, India is expanding digital public health and digital health infrastructure. The Ayushman Bharat Digital Mission (ABDM) is building foundational digital health architecture for identity, registries, and interoperability.<sup>3,4</sup> The Integrated Health Information Platform (IHIP) has demonstrated the operational importance of digital surveillance concepts for large-scale public health monitoring.<sup>5</sup> These developments create an opportunity to think beyond facility-bound incident registers and toward a federated patient safety surveillance model that is digitally ready, operationally layered, and governance-oriented.
 
-The challenge is not only technical. Incident reporting systems fail when they are punitive, poorly classified, disconnected from feedback, weakly governed, or incapable of supporting learning. Reviews of patient safety learning systems have repeatedly shown barriers such as fear of blame, limited feedback, unclear reporting rules, poor organizational support, and inadequate learning loops [6,7]. Therefore, a useful Indian framework must integrate taxonomy, workflows, governance, denominators, and learning functions rather than merely digitizing reporting forms.
+The challenge is not only technical. Incident reporting systems fail when they are punitive, poorly classified, disconnected from feedback, weakly governed, or incapable of supporting learning. Reviews of patient safety learning systems have repeatedly shown barriers such as fear of blame, limited feedback, unclear reporting rules, poor organizational support, and inadequate learning loops.<sup>6,7</sup> Therefore, a useful Indian framework must integrate taxonomy, workflows, governance, denominators, and learning functions rather than merely digitizing reporting forms.
 
 This paper synthesizes the relevant literature and policy context and proposes a framework for a federated patient safety surveillance system for India. The goal is not to claim implementation effectiveness, which still requires prospective study, but to define a defensible systems architecture that can support reporting, learning, governance, and prevention at scale.
 
@@ -63,9 +63,9 @@ First, avoidable harm presents through multiple mechanisms. Some signals are vis
 
 Second, patient safety requires denominators. A count of adverse events is not enough without context such as patient-days, admissions, surgeries, deliveries, or critical result volumes. Daily operational surveillance and event-level case review are related but different functions. A mature system needs both.
 
-Third, governance is indispensable. Incident reporting without feedback and action creates fatigue, concealment, or symbolic compliance. A surveillance system should support escalation, auditability, corrective and preventive action tracking, and policy loops. This is consistent with the broader patient safety literature, which emphasizes that learning systems depend not merely on reporting frequency but on non-punitive culture, structured analysis, and visible learning cycles [6,7].
+Third, governance is indispensable. Incident reporting without feedback and action creates fatigue, concealment, or symbolic compliance. A surveillance system should support escalation, auditability, corrective and preventive action tracking, and policy loops. This is consistent with the broader patient safety literature, which emphasizes that learning systems depend not merely on reporting frequency but on non-punitive culture, structured analysis, and visible learning cycles.<sup>6,7</sup>
 
-Fourth, India's evolving digital health landscape makes interoperability both possible and necessary. ABDM offers building blocks for registries and interoperable exchange; IHIP demonstrates the value of digital surveillance architecture for large systems; and NABH-linked quality processes create a natural interface for facility governance and comparability [3-5,8]. A patient safety surveillance system that is not designed for interoperability risks becoming another silo.
+Fourth, India's evolving digital health landscape makes interoperability both possible and necessary. ABDM offers building blocks for registries and interoperable exchange; IHIP demonstrates the value of digital surveillance architecture for large systems; and NABH-linked quality processes create a natural interface for facility governance and comparability.<sup>3-5,8</sup> A patient safety surveillance system that is not designed for interoperability risks becoming another silo.
 
 ## A proposed architectural model
 
@@ -140,7 +140,7 @@ India's future patient safety surveillance system should be interoperable rather
 
 ### ABDM-aligned readiness
 
-ABDM provides a relevant enabling direction through digital identity, registries, and interoperability-oriented infrastructure [3,4]. A patient safety surveillance platform should be able to use these assets without being dependent on them for all workflows. Facility, department, and provider identities should be mappable to standardized registries where available.
+ABDM provides a relevant enabling direction through digital identity, registries, and interoperability-oriented infrastructure.<sup>3,4</sup> A patient safety surveillance platform should be able to use these assets without being dependent on them for all workflows. Facility, department, and provider identities should be mappable to standardized registries where available.
 
 ### Manual-plus-digital ingestion
 
@@ -184,7 +184,7 @@ AI should not autonomously:
 - replace governance review;
 - make unsupported claims about causality.
 
-The WHO and broader health AI governance literature emphasize the need for transparency, accountability, human oversight, and fitness for purpose [2,9]. In the Indian context, these principles are especially important because patient safety systems must build trust, not deepen opacity.
+The WHO and broader health AI governance literature emphasize the need for transparency, accountability, human oversight, and fitness for purpose.<sup>2,9</sup> In the Indian context, these principles are especially important because patient safety systems must build trust, not deepen opacity.
 
 ### Governance requirements for AI
 
