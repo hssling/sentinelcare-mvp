@@ -73,6 +73,11 @@ Current IJMR-targeted packages:
 - [Reporting and learning systems review package](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_review_patient_safety_learning_systems/README.md)
 - [Governance and bounded AI package](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_governance_bounded_ai_safety_surveillance/README.md)
 
+Supporting IJMR decision assets:
+
+- [IJMR submission priority note](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_submission_priority_note.md)
+- [IJMR lead-package submission checklist](d:/Medical%20Error%20U-HEDPPLS/projects/india_patient_safety_surveillance/docs/manuscripts/target_journal_packages/ijmr_submission_checklist_lead_package.md)
+
 ## Code Locations
 
 - backend: [src/indiasurveillance](d:/Medical%20Error%20U-HEDPPLS/src/indiasurveillance)
